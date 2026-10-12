@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prompt Evaluation Report - xml-extra-prompt-smoke</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; margin: 18px; color: #111827; background: #f8f8f8; }
+        h1 { margin: 0 0 12px 0; font-size: 34px; font-weight: 700; }
+        .meta { font-size: 12px; color: #4b5563; margin-bottom: 12px; }
+        .cards { display: grid; grid-template-columns: repeat(3, minmax(190px, 1fr)); gap: 12px; margin-bottom: 14px; }
+        .card { border: 1px solid #d1d5db; border-radius: 2px; background: #fff; padding: 10px; }
+        .label { font-size: 11px; color: #374151; text-transform: uppercase; }
+        .value { margin-top: 4px; font-size: 28px; font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; background: #fff; font-size: 12px; }
+        th, td { border: 1px solid #d1d5db; text-align: left; vertical-align: top; padding: 8px; }
+        th { background: #111827; color: #fff; font-size: 11px; text-transform: uppercase; }
+        ul { margin: 0; padding-left: 16px; }
+        li { margin: 0 0 3px 0; }
+        .muted { color: #6b7280; font-size: 11px; }
+        .score-pill { display: inline-block; border-radius: 3px; min-width: 40px; text-align: center; padding: 2px 6px; font-weight: 700; }
+        .score-high { background: #dcfce7; color: #14532d; }
+        .score-low { background: #fee2e2; color: #7f1d1d; }
+    </style>
+</head>
+<body>
+    <h1>Prompt Evaluation Report</h1>
+    <div class="meta">Run: <strong>xml-extra-prompt-smoke</strong> · Dataset: data/criteria_eval_sample.jsonl · Mode: demo · Model: demo-local · Errors: 0</div>
+
+    <section class="cards">
+        <div class="card"><div class="label">Total Test Cases</div><div class="value">1</div></div>
+        <div class="card"><div class="label">Average Score</div><div class="value">10.8 / 10</div></div>
+        <div class="card"><div class="label">Pass Rate (≥7)</div><div class="value">100.0%</div></div>
+    </section>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Prompt Inputs</th>
+                <th>Scenario</th>
+                <th>Solution Criteria</th>
+                <th>Prediction</th>
+                <th>Score</th>
+                <th>Reasoning</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>id:</strong> meal-1<br/><strong>topic:</strong> meal-plan</td><td>Create a compact 1-day meal plan for a toned athlete who prefers more meat.</td><td><ul><li>Includes breakfast, lunch, and dinner</li><li>Aligns with toned goal</li><li>Mentions higher meat preference</li><li>Concise and practical</li></ul></td><td>Demo mode: quantum computing uses qubits that can represent multiple states at once, which lets certain problems be explored more efficiently. Prompt: Answer the following user question directly and concisely in one paragraph. Do not include extra meta-commentary.
+
+Question: Create a compact 1-day meal plan for a toned athlete who prefers more meat.
+
+Additional context:
+&lt;athlete_information&gt;
+- Height: 5&#x27;2&quot;
+- Weight: 147 lbs
+- Goal: Build muscle
+- Dietary restrictions: protein/meat
+&lt;/athlete_information&gt;</td><td><span class='score-pill score-high'>10.8</span></td><td>Exact match=0.00; Token F1=0.02; Criteria=0.32.</td></tr>
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "run_name": "xml-extra-prompt-smoke",
+  "dataset": "data/criteria_eval_sample.jsonl",
+  "rows_evaluated": 1,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "started_at": "2026-10-12T03:44:54.017333+00:00",
+  "finished_at": "2026-10-12T03:44:54.017914+00:00",
+  "overall_score": 10.801470588235293,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.023529411764705882,
+    "avg_criteria_score": 0.3208333333333333,
+    "avg_overall_score": 10.801470588235293,
+    "avg_reference_tokens": 13.0,
+    "avg_prediction_tokens": 72.0
+  },
+  "extra_prompt": {
+    "enabled": true,
+    "file": "data/athlete_context.xml"
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/xml-extra-prompt-smoke/predictions.jsonl",
+    "report": "data/eval_runs/xml-extra-prompt-smoke/report.json",
+    "html_report": "data/eval_runs/xml-extra-prompt-smoke/report.html"
+  }
+}

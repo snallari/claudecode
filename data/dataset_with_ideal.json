@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 157,
+      "weight": 68,
+      "goal": "improve endurance",
+      "restrictions": "gluten-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 157\n- weight (Athlete's weight in kg): 68\n- goal (Goal of the athlete): improve endurance\n- restrictions (Dietary restrictions of the athlete): gluten-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables.\nSnack: Greek yogurt (200g) + banana.\nDinner: 180g lean beef, 250g potatoes, salad with olive oil.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with improve endurance and respects gluten-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  }
+]
