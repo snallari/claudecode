@@ -1,0 +1,21 @@
+{
+  "run_name": "20261012T023221Z",
+  "dataset": "data/synthetic_dataset.jsonl",
+  "rows_evaluated": 5,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "started_at": "2026-10-12T02:32:21.479155+00:00",
+  "finished_at": "2026-10-12T02:32:21.479535+00:00",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.11428571428571428,
+    "avg_reference_tokens": 14.0,
+    "avg_prediction_tokens": 28.0
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/20261012T023221Z/predictions.jsonl",
+    "report": "data/eval_runs/20261012T023221Z/report.json"
+  }
+}
