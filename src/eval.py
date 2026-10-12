@@ -143,12 +143,15 @@ def load_jsonl_dataset(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def build_eval_prompt(prompt: str) -> str:
-    return (
+def build_eval_prompt(prompt: str, extra_prompt: str | None = None) -> str:
+    base = (
         "Answer the following user question directly and concisely in one paragraph. "
         "Do not include extra meta-commentary.\n\n"
         f"Question: {prompt}"
     )
+    if extra_prompt and extra_prompt.strip():
+        return f"{base}\n\nAdditional context:\n{extra_prompt.strip()}"
+    return base
 
 
 def generate_prediction(
@@ -157,21 +160,42 @@ def generate_prediction(
     client: anthropic.Anthropic | None,
     model: str,
     max_tokens: int,
+    extra_prompt: str | None = None,
 ) -> str:
     if mode == "demo":
-        return build_demo_answer(row_prompt)
+        return build_demo_answer(build_eval_prompt(row_prompt, extra_prompt=extra_prompt))
 
     if client is None:
         raise RuntimeError("Anthropic client is required in API mode.")
 
     response = chat(
         client=client,
-        messages=[{"role": "user", "content": build_eval_prompt(row_prompt)}],
+        messages=[{"role": "user", "content": build_eval_prompt(row_prompt, extra_prompt=extra_prompt)}],
         model=model,
         max_tokens=max_tokens,
         stream=False,
     )
     return get_text_from_response(response).strip()
+
+
+def resolve_extra_prompt(inline_text: str | None, file_path: str | None) -> str | None:
+    parts: list[str] = []
+
+    if inline_text and inline_text.strip():
+        parts.append(inline_text.strip())
+
+    if file_path and file_path.strip():
+        path = Path(file_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Extra prompt file not found: {path}")
+        file_text = path.read_text(encoding="utf-8").strip()
+        if file_text:
+            parts.append(file_text)
+
+    if not parts:
+        return None
+
+    return "\n\n".join(parts)
 
 
 def aggregate_metrics(records: list[dict[str, Any]]) -> dict[str, float]:
@@ -354,6 +378,16 @@ def parse_args() -> argparse.Namespace:
         help="Fallback model name",
     )
     parser.add_argument("--max-tokens", type=int, default=256, help="Max tokens per model response")
+    parser.add_argument(
+        "--extra-prompt",
+        default=None,
+        help="Optional inline extra prompt/context (supports XML tags)",
+    )
+    parser.add_argument(
+        "--extra-prompt-file",
+        default=None,
+        help="Path to a file containing extra prompt/context to append to each evaluation prompt",
+    )
     parser.add_argument("--fail-fast", action="store_true", help="Stop immediately if one row fails")
     return parser.parse_args()
 
@@ -367,6 +401,8 @@ def main() -> None:
         if args.rows <= 0:
             raise ValueError("--rows must be greater than 0 when provided")
         rows = rows[: args.rows]
+
+    resolved_extra_prompt = resolve_extra_prompt(args.extra_prompt, args.extra_prompt_file)
 
     requested_mode = args.mode
     api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -412,6 +448,7 @@ def main() -> None:
                 client=client,
                 model=resolved_model,
                 max_tokens=args.max_tokens,
+                extra_prompt=resolved_extra_prompt,
             )
             metrics = {
                 "exact_match": exact_match(reference, prediction),
@@ -501,6 +538,10 @@ def main() -> None:
         "overall_score": aggregate["avg_overall_score"],
         "overall_grade": score_grade(aggregate["avg_overall_score"]),
         "metrics": aggregate,
+        "extra_prompt": {
+            "enabled": bool(resolved_extra_prompt),
+            "file": args.extra_prompt_file,
+        },
         "artifacts": {
             "predictions": str(predictions_path),
             "report": str(report_path),

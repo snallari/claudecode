@@ -55,11 +55,30 @@ class Evaluator:
         task_description: str,
         prompt_inputs_spec: dict[str, str],
         sample_input: dict[str, Any],
+        extra_prompt: str | None = None,
+        ideal_output: str | None = None,
     ) -> str:
         lines = [task_description.strip(), "", "Inputs:"]
         for key, description in prompt_inputs_spec.items():
             value = sample_input.get(key, "")
             lines.append(f"- {key} ({description}): {value}")
+
+        if ideal_output and ideal_output.strip():
+            lines.append("")
+            lines.append("Use the following ideal output style as a quality reference:")
+            lines.append("<ideal_output>")
+            lines.append(ideal_output.strip())
+            lines.append("</ideal_output>")
+            lines.append(
+                "This example is well-structured, provides detailed food choices and quantities, "
+                "and aligns with the athlete's goals and restrictions."
+            )
+
+        if extra_prompt and extra_prompt.strip():
+            lines.append("")
+            lines.append("Additional context:")
+            lines.append(extra_prompt.strip())
+
         return "\n".join(lines).strip()
 
     def _build_expected_output(self, sample_input: dict[str, Any]) -> str:
@@ -79,6 +98,8 @@ class Evaluator:
         output_file: str,
         num_cases: int,
         eval_criteria: list[str] | None = None,
+        extra_prompt: str | None = None,
+        ideal_output: str | None = None,
     ) -> list[dict[str, Any]]:
         if num_cases <= 0:
             raise ValueError("num_cases must be greater than 0")
@@ -94,7 +115,13 @@ class Evaluator:
         dataset: list[dict[str, Any]] = []
         for case_index in range(1, num_cases + 1):
             sample_input = self._sample_input(case_index)
-            prompt = self._build_prompt(task_description, prompt_inputs_spec, sample_input)
+            prompt = self._build_prompt(
+                task_description=task_description,
+                prompt_inputs_spec=prompt_inputs_spec,
+                sample_input=sample_input,
+                extra_prompt=extra_prompt,
+                ideal_output=ideal_output,
+            )
             expected_output = self._build_expected_output(sample_input)
 
             dataset.append(
