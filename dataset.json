@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "task_description": "Write a compact, concise 1 day meal plan for a single athlete",
+    "input": {
+      "height": 157,
+      "weight": 68,
+      "goal": "improve endurance",
+      "restrictions": "gluten-free"
+    },
+    "prompt": "Write a compact, concise 1 day meal plan for a single athlete\n\nInputs:\n- height (Athlete's height in cm): 157\n- weight (Athlete's weight in kg): 68\n- goal (Goal of the athlete): improve endurance\n- restrictions (Dietary restrictions of the athlete): gluten-free",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with improve endurance and respects gluten-free."
+  },
+  {
+    "id": 2,
+    "task_description": "Write a compact, concise 1 day meal plan for a single athlete",
+    "input": {
+      "height": 181,
+      "weight": 83,
+      "goal": "build lean muscle",
+      "restrictions": "vegetarian"
+    },
+    "prompt": "Write a compact, concise 1 day meal plan for a single athlete\n\nInputs:\n- height (Athlete's height in cm): 181\n- weight (Athlete's weight in kg): 83\n- goal (Goal of the athlete): build lean muscle\n- restrictions (Dietary restrictions of the athlete): vegetarian",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with build lean muscle and respects vegetarian."
+  },
+  {
+    "id": 3,
+    "task_description": "Write a compact, concise 1 day meal plan for a single athlete",
+    "input": {
+      "height": 172,
+      "weight": 76,
+      "goal": "reduce body fat",
+      "restrictions": "lactose-free"
+    },
+    "prompt": "Write a compact, concise 1 day meal plan for a single athlete\n\nInputs:\n- height (Athlete's height in cm): 172\n- weight (Athlete's weight in kg): 76\n- goal (Goal of the athlete): reduce body fat\n- restrictions (Dietary restrictions of the athlete): lactose-free",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with reduce body fat and respects lactose-free."
+  },
+  {
+    "id": 4,
+    "task_description": "Write a compact, concise 1 day meal plan for a single athlete",
+    "input": {
+      "height": 157,
+      "weight": 67,
+      "goal": "toned",
+      "restrictions": "more meat"
+    },
+    "prompt": "Write a compact, concise 1 day meal plan for a single athlete\n\nInputs:\n- height (Athlete's height in cm): 157\n- weight (Athlete's weight in kg): 67\n- goal (Goal of the athlete): toned\n- restrictions (Dietary restrictions of the athlete): more meat",
+    "expected_output": "Breakfast: 3-egg omelet with spinach and toast. Lunch: Grilled chicken bowl with rice and vegetables. Dinner: Lean beef or turkey with potatoes and salad. Snacks: Greek yogurt, fruit, or protein shake. Emphasizes a toned goal with higher meat intake preference."
+  }
+]

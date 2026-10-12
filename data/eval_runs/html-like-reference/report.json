@@ -1,0 +1,26 @@
+{
+  "run_name": "html-like-reference",
+  "dataset": "data/criteria_eval_sample.jsonl",
+  "rows_evaluated": 1,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "started_at": "2026-10-12T03:32:24.057010+00:00",
+  "finished_at": "2026-10-12T03:32:24.057497+00:00",
+  "overall_score": 3.75,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.0,
+    "avg_criteria_score": 0.125,
+    "avg_overall_score": 3.75,
+    "avg_reference_tokens": 13.0,
+    "avg_prediction_tokens": 37.0
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/html-like-reference/predictions.jsonl",
+    "report": "data/eval_runs/html-like-reference/report.json",
+    "html_report": "data/eval_runs/html-like-reference/report.html"
+  }
+}

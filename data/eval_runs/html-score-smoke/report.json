@@ -1,0 +1,23 @@
+{
+  "run_name": "html-score-smoke",
+  "dataset": "data/criteria_eval_sample.jsonl",
+  "rows_evaluated": 1,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "started_at": "2026-10-12T03:07:30.172822+00:00",
+  "finished_at": "2026-10-12T03:07:30.173326+00:00",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.0,
+    "avg_criteria_score": 0.125,
+    "avg_reference_tokens": 13.0,
+    "avg_prediction_tokens": 37.0
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/html-score-smoke/predictions.jsonl",
+    "report": "data/eval_runs/html-score-smoke/report.json",
+    "html_report": "data/eval_runs/html-score-smoke/report.html"
+  }
+}
