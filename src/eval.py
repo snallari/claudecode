@@ -357,7 +357,7 @@ def write_html(path: Path, content: str) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run prompt/answer evaluation on a JSONL dataset.")
-    parser.add_argument("--dataset", default="data/synthetic_dataset.jsonl", help="Path to JSONL dataset")
+    parser.add_argument("--dataset", default="data/datasets/synthetic_dataset.jsonl", help="Path to JSONL dataset")
     parser.add_argument(
         "--output-dir",
         default="data/eval_runs",

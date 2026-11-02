@@ -3,4 +3,4 @@ services:
     build: .
     env_file:
       - .env
-    command: python app.py
+    command: python -m src.app

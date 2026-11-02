@@ -1,0 +1,30 @@
+{
+  "run_name": "20261101T040715Z",
+  "dataset": "data/job_postings_last_24h.jsonl",
+  "rows_evaluated": 5,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "started_at": "2026-11-01T04:07:15.581449+00:00",
+  "finished_at": "2026-11-01T04:07:15.581961+00:00",
+  "overall_score": 14.698084453525956,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.20997263505037084,
+    "avg_criteria_score": 0.0,
+    "avg_overall_score": 14.698084453525956,
+    "avg_reference_tokens": 24.2,
+    "avg_prediction_tokens": 59.6
+  },
+  "extra_prompt": {
+    "enabled": false,
+    "file": null
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/20261101T040715Z/predictions.jsonl",
+    "report": "data/eval_runs/20261101T040715Z/report.json",
+    "html_report": "data/eval_runs/20261101T040715Z/report.html"
+  }
+}

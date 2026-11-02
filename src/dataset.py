@@ -7,37 +7,67 @@ import random
 from pathlib import Path
 
 
-TOPICS = [
-    "quantum computing",
-    "machine learning",
-    "cloud security",
-    "data structures",
-    "software testing",
-    "python programming",
-    "api design",
-    "docker basics",
+JOB_ROLES = [
+    "Full Stack Engineer",
+    "Full Stack Developer",
+    "React Engineer",
+    "Node.js Engineer",
+    ".NET Engineer",
+    "Fullstack Developer",
 ]
 
-TASKS = [
-    "Explain in one sentence",
-    "Summarize for a beginner",
-    "Give 3 key points about",
-    "Describe real-world use of",
-    "List common pitfalls in",
+COMPANIES = [
+    "Northstar Labs",
+    "Helio Systems",
+    "CrestPoint AI",
+    "BluePeak Data",
+    "NovaGrid Cloud",
+    "Signal Forge",
+    "KiteWorks",
+    "Summit Logic",
+    "ApexForge",
+    "CloudHarbor",
+    "DevCore Studio",
+    "StackPilot",
+]
+
+LOCATIONS = [
+    "Remote",
+    "New York, NY",
+    "Austin, TX",
+    "Seattle, WA",
+    "Boston, MA",
+    "Chicago, IL",
+    "London, UK",
+    "Berlin, Germany",
+    "Toronto, ON",
+    "Denver, CO",
+]
+
+PROMPT_TEMPLATES = [
+    "List the fullstack React, Node.js, and .NET job postings from the last 24 hours for {role} roles.",
+    "Give me the recent fullstack job postings in the last 24 hours for {role} positions with React, Node.js, and .NET.",
+    "What fullstack React, Node.js, and .NET job postings were published in the last 24 hours for {role}?",
+    "Show all {role} fullstack job postings from the past 24 hours, including React, Node.js, and .NET.",
 ]
 
 
 def build_row(index: int) -> dict[str, str]:
-    topic = random.choice(TOPICS)
-    task = random.choice(TASKS)
-    prompt = f"{task} {topic}."
+    role = random.choice(JOB_ROLES)
+    company = random.choice(COMPANIES)
+    location = random.choice(LOCATIONS)
+    prompt = random.choice(PROMPT_TEMPLATES).format(role=role)
+    hours_ago = random.randint(1, 24)
     answer = (
-        f"Sample answer {index}: {topic.title()} involves core concepts, practical tradeoffs, "
-        "and common implementation patterns."
+        f"[{index}] {company} — {role} ({location}) — React, Node.js, .NET — posted {hours_ago} hours ago. "
+        f"Apply via the company careers page or recruiter contact."
     )
     return {
         "id": str(index),
-        "topic": topic,
+        "role": role,
+        "company": company,
+        "location": location,
+        "hours_ago": str(hours_ago),
         "prompt": prompt,
         "answer": answer,
     }
@@ -61,13 +91,13 @@ def write_jsonl(rows: list[dict[str, str]], output_path: Path) -> None:
 def write_csv(rows: list[dict[str, str]], output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=["id", "topic", "prompt", "answer"])
+        writer = csv.DictWriter(file, fieldnames=["id", "role", "company", "location", "hours_ago", "prompt", "answer"])
         writer.writeheader()
         writer.writerows(rows)
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate a synthetic conversational dataset.")
+    parser = argparse.ArgumentParser(description="Generate a synthetic full-stack job-posting dataset for the last 24 hours.")
     parser.add_argument("--rows", type=int, default=100, help="Number of rows to generate")
     parser.add_argument(
         "--format",
@@ -77,7 +107,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output",
-        default="data/synthetic_dataset.jsonl",
+        default="data/datasets/job_postings_last_24h.jsonl",
         help="Output file path",
     )
     parser.add_argument("--seed", type=int, default=42, help="Random seed for deterministic output")
@@ -95,7 +125,7 @@ def main() -> None:
     else:
         write_jsonl(rows, output_path)
 
-    print(f"Generated {len(rows)} rows at {output_path}")
+    print(f"Generated {len(rows)} job-posting rows at {output_path}")
 
 
 if __name__ == "__main__":

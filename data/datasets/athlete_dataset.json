@@ -1,0 +1,452 @@
+[
+  {
+    "id": 1,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 157,
+      "weight": 68,
+      "goal": "improve endurance",
+      "restrictions": "gluten-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 157\n- weight (Athlete's weight in kg): 68\n- goal (Goal of the athlete): improve endurance\n- restrictions (Dietary restrictions of the athlete): gluten-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with improve endurance and respects gluten-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 2,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 181,
+      "weight": 83,
+      "goal": "build lean muscle",
+      "restrictions": "vegetarian"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 181\n- weight (Athlete's weight in kg): 83\n- goal (Goal of the athlete): build lean muscle\n- restrictions (Dietary restrictions of the athlete): vegetarian\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with build lean muscle and respects vegetarian.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 3,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 172,
+      "weight": 76,
+      "goal": "reduce body fat",
+      "restrictions": "lactose-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 172\n- weight (Athlete's weight in kg): 76\n- goal (Goal of the athlete): reduce body fat\n- restrictions (Dietary restrictions of the athlete): lactose-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with reduce body fat and respects lactose-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 4,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 159,
+      "weight": 75,
+      "goal": "build lean muscle",
+      "restrictions": "nut-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 159\n- weight (Athlete's weight in kg): 75\n- goal (Goal of the athlete): build lean muscle\n- restrictions (Dietary restrictions of the athlete): nut-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with build lean muscle and respects nut-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 5,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 177,
+      "weight": 54,
+      "goal": "reduce body fat",
+      "restrictions": "nut-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 177\n- weight (Athlete's weight in kg): 54\n- goal (Goal of the athlete): reduce body fat\n- restrictions (Dietary restrictions of the athlete): nut-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with reduce body fat and respects nut-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 6,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 190,
+      "weight": 70,
+      "goal": "improve endurance",
+      "restrictions": "nut-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 190\n- weight (Athlete's weight in kg): 70\n- goal (Goal of the athlete): improve endurance\n- restrictions (Dietary restrictions of the athlete): nut-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with improve endurance and respects nut-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 7,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 159,
+      "weight": 72,
+      "goal": "reduce body fat",
+      "restrictions": "none"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 159\n- weight (Athlete's weight in kg): 72\n- goal (Goal of the athlete): reduce body fat\n- restrictions (Dietary restrictions of the athlete): none\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with reduce body fat and respects none.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 8,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 186,
+      "weight": 104,
+      "goal": "maintain performance",
+      "restrictions": "lactose-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 186\n- weight (Athlete's weight in kg): 104\n- goal (Goal of the athlete): maintain performance\n- restrictions (Dietary restrictions of the athlete): lactose-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with maintain performance and respects lactose-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 9,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 170,
+      "weight": 103,
+      "goal": "improve endurance",
+      "restrictions": "vegetarian"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 170\n- weight (Athlete's weight in kg): 103\n- goal (Goal of the athlete): improve endurance\n- restrictions (Dietary restrictions of the athlete): vegetarian\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with improve endurance and respects vegetarian.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 10,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 172,
+      "weight": 53,
+      "goal": "reduce body fat",
+      "restrictions": "lactose-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 172\n- weight (Athlete's weight in kg): 53\n- goal (Goal of the athlete): reduce body fat\n- restrictions (Dietary restrictions of the athlete): lactose-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with reduce body fat and respects lactose-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 11,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 194,
+      "weight": 104,
+      "goal": "improve endurance",
+      "restrictions": "gluten-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 194\n- weight (Athlete's weight in kg): 104\n- goal (Goal of the athlete): improve endurance\n- restrictions (Dietary restrictions of the athlete): gluten-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with improve endurance and respects gluten-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 12,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 163,
+      "weight": 78,
+      "goal": "maintain performance",
+      "restrictions": "gluten-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 163\n- weight (Athlete's weight in kg): 78\n- goal (Goal of the athlete): maintain performance\n- restrictions (Dietary restrictions of the athlete): gluten-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with maintain performance and respects gluten-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 13,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 160,
+      "weight": 110,
+      "goal": "improve endurance",
+      "restrictions": "vegetarian"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 160\n- weight (Athlete's weight in kg): 110\n- goal (Goal of the athlete): improve endurance\n- restrictions (Dietary restrictions of the athlete): vegetarian\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with improve endurance and respects vegetarian.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 14,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 190,
+      "weight": 50,
+      "goal": "reduce body fat",
+      "restrictions": "nut-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 190\n- weight (Athlete's weight in kg): 50\n- goal (Goal of the athlete): reduce body fat\n- restrictions (Dietary restrictions of the athlete): nut-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with reduce body fat and respects nut-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 15,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 157,
+      "weight": 73,
+      "goal": "build lean muscle",
+      "restrictions": "vegetarian"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 157\n- weight (Athlete's weight in kg): 73\n- goal (Goal of the athlete): build lean muscle\n- restrictions (Dietary restrictions of the athlete): vegetarian\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with build lean muscle and respects vegetarian.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 16,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 192,
+      "weight": 62,
+      "goal": "improve endurance",
+      "restrictions": "vegetarian"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 192\n- weight (Athlete's weight in kg): 62\n- goal (Goal of the athlete): improve endurance\n- restrictions (Dietary restrictions of the athlete): vegetarian\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with improve endurance and respects vegetarian.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 17,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 169,
+      "weight": 55,
+      "goal": "reduce body fat",
+      "restrictions": "none"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 169\n- weight (Athlete's weight in kg): 55\n- goal (Goal of the athlete): reduce body fat\n- restrictions (Dietary restrictions of the athlete): none\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with reduce body fat and respects none.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 18,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 174,
+      "weight": 68,
+      "goal": "improve endurance",
+      "restrictions": "lactose-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 174\n- weight (Athlete's weight in kg): 68\n- goal (Goal of the athlete): improve endurance\n- restrictions (Dietary restrictions of the athlete): lactose-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with improve endurance and respects lactose-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 19,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 186,
+      "weight": 61,
+      "goal": "improve endurance",
+      "restrictions": "lactose-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 186\n- weight (Athlete's weight in kg): 61\n- goal (Goal of the athlete): improve endurance\n- restrictions (Dietary restrictions of the athlete): lactose-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with improve endurance and respects lactose-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 20,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 191,
+      "weight": 61,
+      "goal": "build lean muscle",
+      "restrictions": "vegetarian"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 191\n- weight (Athlete's weight in kg): 61\n- goal (Goal of the athlete): build lean muscle\n- restrictions (Dietary restrictions of the athlete): vegetarian\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with build lean muscle and respects vegetarian.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 21,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 183,
+      "weight": 78,
+      "goal": "maintain performance",
+      "restrictions": "lactose-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 183\n- weight (Athlete's weight in kg): 78\n- goal (Goal of the athlete): maintain performance\n- restrictions (Dietary restrictions of the athlete): lactose-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with maintain performance and respects lactose-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 22,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 185,
+      "weight": 57,
+      "goal": "reduce body fat",
+      "restrictions": "nut-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 185\n- weight (Athlete's weight in kg): 57\n- goal (Goal of the athlete): reduce body fat\n- restrictions (Dietary restrictions of the athlete): nut-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with reduce body fat and respects nut-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 23,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 181,
+      "weight": 68,
+      "goal": "maintain performance",
+      "restrictions": "nut-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 181\n- weight (Athlete's weight in kg): 68\n- goal (Goal of the athlete): maintain performance\n- restrictions (Dietary restrictions of the athlete): nut-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with maintain performance and respects nut-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 24,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 159,
+      "weight": 69,
+      "goal": "reduce body fat",
+      "restrictions": "vegetarian"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 159\n- weight (Athlete's weight in kg): 69\n- goal (Goal of the athlete): reduce body fat\n- restrictions (Dietary restrictions of the athlete): vegetarian\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with reduce body fat and respects vegetarian.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  },
+  {
+    "id": 25,
+    "task_description": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.",
+    "input": {
+      "height": 159,
+      "weight": 57,
+      "goal": "reduce body fat",
+      "restrictions": "gluten-free"
+    },
+    "prompt": "Generate a compact one-day meal plan for a single athlete. Include breakfast, lunch, dinner, and 1-2 snacks. Ensure the plan strictly follows the athlete's dietary restrictions, supports their stated goal, and uses practical foods with brief portion guidance.\n\nInputs:\n- height (Athlete's height in cm): 159\n- weight (Athlete's weight in kg): 57\n- goal (Goal of the athlete): reduce body fat\n- restrictions (Dietary restrictions of the athlete): gluten-free\n\nUse the following ideal output style as a quality reference:\n<ideal_output>\nBreakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries, 1 cup Greek yogurt.\nLunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables, 1 banana.\nSnack: Protein shake with almond milk and a small apple.\nDinner: 180g salmon, 250g potatoes, salad with olive oil, 1 orange.\nSnack: Cottage cheese with pineapple.\n</ideal_output>\nThis example is well-structured, provides detailed food choices and quantities, and aligns with the athlete's goals and restrictions.\n\nAdditional context:\n<athlete_information>\n- Training split: 4-day strength + 2-day conditioning\n- Preferred foods: lean protein, oats, rice, fruit, vegetables\n- Hydration target: 2.5-3 L/day\n- Recovery window: post-workout meal within 60 minutes\n</athlete_information>",
+    "expected_output": "Breakfast: Oats + fruit + protein. Lunch: Lean protein, whole grains, vegetables. Dinner: Protein + complex carbs + salad. Snacks: Yogurt/fruit/nuts as allowed. Target aligns with reduce body fat and respects gluten-free.",
+    "eval_criteria": [
+      "Includes breakfast, lunch, and dinner",
+      "Aligns with the athlete goal",
+      "Respects dietary restrictions",
+      "Keeps the plan concise and practical"
+    ]
+  }
+]
