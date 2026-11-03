@@ -23,6 +23,10 @@ DEFAULT_GRADER = "lexical"
 DEFAULT_CODE_TIMEOUT_SECONDS = 3.0
 
 
+def log_step(message: str) -> None:
+    print(f"[step] {message}")
+
+
 def normalize_grader_method(grader: str) -> str:
     normalized = str(grader).strip().lower()
     if normalized == "coding":
@@ -843,14 +847,20 @@ def main() -> None:
     load_dotenv()
     args = parse_args()
     grader_method = normalize_grader_method(args.grader)
+    log_step(f"Arguments parsed. Grader method resolved to '{grader_method}'.")
 
+    log_step(f"Loading dataset from {args.dataset}")
     rows = load_jsonl_dataset(Path(args.dataset))
+    log_step(f"Loaded {len(rows)} dataset rows")
     if args.rows is not None:
         if args.rows <= 0:
             raise ValueError("--rows must be greater than 0 when provided")
         rows = rows[: args.rows]
+        log_step(f"Applied --rows limit: evaluating first {len(rows)} rows")
 
+    log_step("Resolving extra prompt context")
     resolved_extra_prompt = resolve_extra_prompt(args.extra_prompt, args.extra_prompt_file)
+    log_step(f"Extra prompt enabled: {'yes' if resolved_extra_prompt else 'no'}")
 
     requested_mode = args.mode
     api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -862,17 +872,21 @@ def main() -> None:
 
     if requested_mode == "auto":
         mode = "api" if api_key else "demo"
+    log_step(f"Execution mode resolved: requested={requested_mode}, active={mode}")
 
     if mode == "api":
         if not api_key:
             raise RuntimeError("ANTHROPIC_API_KEY is required for --mode api")
 
+        log_step("Initializing Anthropic client")
         client = anthropic.Anthropic(api_key=api_key)
+        log_step(f"Resolving prediction model: requested={args.model}")
         resolved_model, resolution_note = resolve_model(client, args.model, args.fallback_model)
         if resolution_note:
             print(resolution_note)
 
         if grader_method == "model":
+            log_step(f"Resolving grader model: requested={resolved_grader_model}")
             resolved_grader_model, grader_resolution_note = resolve_model(
                 client,
                 resolved_grader_model,
@@ -891,6 +905,7 @@ def main() -> None:
     predictions_path = run_dir / "predictions.jsonl"
     report_path = run_dir / "report.json"
     html_report_path = run_dir / "report.html"
+    log_step(f"Run artifacts directory: {run_dir}")
 
     started_at = datetime.now(timezone.utc).isoformat()
     prediction_rows: list[dict[str, Any]] = []
@@ -906,6 +921,7 @@ def main() -> None:
         reference = row["answer"]
         eval_criteria = [str(criterion) for criterion in row.get("eval_criteria", [])]
         code_grader_spec = row.get("code_grader")
+        print(f"[row {index}/{len(rows)}] start id={row_id}")
 
         try:
             prediction = generate_prediction(
@@ -916,6 +932,7 @@ def main() -> None:
                 max_tokens=args.max_tokens,
                 extra_prompt=resolved_extra_prompt,
             )
+            print(f"[row {index}/{len(rows)}] prediction generated")
             metrics = {
                 "exact_match": exact_match(reference, prediction),
                 "token_f1": token_f1(reference, prediction),
@@ -928,10 +945,12 @@ def main() -> None:
                 criteria_value,
             )
             metrics["grade"] = score_grade(metrics["overall_score"])
+            print(f"[row {index}/{len(rows)}] lexical metrics computed")
 
             if grader_method == "model":
                 if client is None:
                     raise RuntimeError("Anthropic client is required for model grading.")
+                print(f"[row {index}/{len(rows)}] applying model grader")
                 grader_output = model_grader_result(
                     client=client,
                     grader_model=resolved_grader_model,
@@ -949,8 +968,10 @@ def main() -> None:
                     "model_rationale": grader_output["rationale"],
                     "raw_response": grader_output["raw_response"],
                 }
+                print(f"[row {index}/{len(rows)}] model grading complete")
             elif grader_method == "code":
                 if code_grader_spec:
+                    print(f"[row {index}/{len(rows)}] applying code grader")
                     timeout_seconds = float(code_grader_spec.get("timeout_seconds", args.code_timeout_seconds))
                     grader_output = code_grader_result(
                         prediction=prediction,
@@ -964,15 +985,18 @@ def main() -> None:
                         "rationale": grader_output["rationale"],
                         "details": grader_output["details"],
                     }
+                    print(f"[row {index}/{len(rows)}] code grading complete")
                 else:
                     metrics["grading_details"] = {
                         "method": "code",
                         "rationale": "No code_grader spec provided for this row; using lexical metrics only.",
                     }
+                    print(f"[row {index}/{len(rows)}] code_grader spec missing; kept lexical metrics")
             else:
                 metrics["grading_details"] = {
                     "method": "lexical",
                 }
+                print(f"[row {index}/{len(rows)}] using lexical grading")
 
             prediction_rows.append(
                 {
@@ -986,9 +1010,11 @@ def main() -> None:
                     "metrics": metrics,
                 }
             )
+            print(f"[row {index}/{len(rows)}] completed")
         except anthropic.APIError as error:
             error_count += 1
             print_api_error(error)
+            print(f"[row {index}/{len(rows)}] failed with API error")
             prediction_rows.append(
                 {
                     "id": row_id,
@@ -1012,6 +1038,7 @@ def main() -> None:
                 raise
         except Exception as error:  # pragma: no cover
             error_count += 1
+            print(f"[row {index}/{len(rows)}] failed with error: {error}")
             prediction_rows.append(
                 {
                     "id": row_id,
@@ -1037,6 +1064,7 @@ def main() -> None:
         if index % 10 == 0 or index == len(rows):
             print(f"Processed {index}/{len(rows)}")
 
+    log_step("Computing aggregate metrics")
     aggregate = aggregate_metrics(prediction_rows)
     finished_at = datetime.now(timezone.utc).isoformat()
 
@@ -1068,8 +1096,11 @@ def main() -> None:
         },
     }
 
+    log_step(f"Writing predictions JSONL to {predictions_path}")
     write_jsonl(predictions_path, prediction_rows)
+    log_step(f"Writing JSON report to {report_path}")
     write_json(report_path, report)
+    log_step(f"Writing HTML report to {html_report_path}")
     write_html(html_report_path, render_html_report(report, prediction_rows))
 
     print("Evaluation complete")

@@ -9,6 +9,10 @@ from pathlib import Path
 from src.dataset import generate_dataset, write_jsonl
 
 
+def log_step(message: str) -> None:
+    print(f"[step] {message}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run end-to-end dataset + evaluation workflow.")
     parser.add_argument(
@@ -71,6 +75,7 @@ def ensure_dataset(path: Path, rows: int, seed: int, regenerate: bool) -> None:
         print(f"Using existing dataset: {path}")
         return
 
+    log_step(f"Generating dataset rows={rows} seed={seed}")
     generated = generate_dataset(rows=rows, seed=seed)
     write_jsonl(generated, path)
     print(f"Generated dataset: {path} (rows={len(generated)}, seed={seed})")
@@ -119,12 +124,16 @@ def build_eval_command(args: argparse.Namespace) -> list[str]:
 
 def main() -> None:
     args = parse_args()
+    log_step("Workflow arguments parsed")
     dataset_path = Path(args.dataset)
     dataset_path.parent.mkdir(parents=True, exist_ok=True)
+    log_step(f"Dataset path prepared: {dataset_path}")
 
     ensure_dataset(dataset_path, rows=args.rows, seed=args.seed, regenerate=args.regenerate_dataset)
+    log_step("Building evaluation command")
     eval_command = build_eval_command(args)
 
+    log_step("Invoking evaluation subprocess")
     print("Running evaluation workflow:")
     print(" ".join(eval_command))
 

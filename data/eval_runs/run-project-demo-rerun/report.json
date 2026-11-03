@@ -1,0 +1,34 @@
+{
+  "run_name": "run-project-demo-rerun",
+  "dataset": "data/datasets/workflow_dataset.jsonl",
+  "rows_evaluated": 3,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "grader": {
+    "method": "code",
+    "model": null
+  },
+  "started_at": "2026-11-03T01:54:45.024231+00:00",
+  "finished_at": "2026-11-03T01:54:45.024606+00:00",
+  "overall_score": 14.43656645868784,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.2062366636955406,
+    "avg_criteria_score": 0.0,
+    "avg_overall_score": 14.43656645868784,
+    "avg_reference_tokens": 24.333333333333332,
+    "avg_prediction_tokens": 59.666666666666664
+  },
+  "extra_prompt": {
+    "enabled": false,
+    "file": null
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/run-project-demo-rerun/predictions.jsonl",
+    "report": "data/eval_runs/run-project-demo-rerun/report.json",
+    "html_report": "data/eval_runs/run-project-demo-rerun/report.html"
+  }
+}
