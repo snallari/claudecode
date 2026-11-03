@@ -1,0 +1,34 @@
+{
+  "run_name": "coding-grader-smoke",
+  "dataset": "data/datasets/code_eval_sample.jsonl",
+  "rows_evaluated": 2,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "grader": {
+    "method": "code",
+    "model": null
+  },
+  "started_at": "2026-11-03T01:37:54.093241+00:00",
+  "finished_at": "2026-11-03T01:37:54.127825+00:00",
+  "overall_score": 0.0,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.1482378262039279,
+    "avg_criteria_score": 0.625,
+    "avg_overall_score": 0.0,
+    "avg_reference_tokens": 8.0,
+    "avg_prediction_tokens": 53.0
+  },
+  "extra_prompt": {
+    "enabled": false,
+    "file": null
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/coding-grader-smoke/predictions.jsonl",
+    "report": "data/eval_runs/coding-grader-smoke/report.json",
+    "html_report": "data/eval_runs/coding-grader-smoke/report.html"
+  }
+}

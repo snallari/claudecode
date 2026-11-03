@@ -120,3 +120,83 @@ Evaluation artifacts are written under `data/eval_runs/<run_name>/`:
 - `report.json`: aggregate metrics (`exact_match_rate`, `avg_token_f1`, token lengths, metadata)
 - `predictions.jsonl`: one row per evaluated sample with prediction + metrics
 - `report.html`: human-friendly score dashboard with overall metrics and per-row scores
+
+Use model-based grading (LLM judge) instead of lexical-only scoring:
+
+```bash
+python -m src.eval \
+	--mode api \
+	--grader model \
+	--model claude-3-5-sonnet-latest \
+	--grader-model claude-3-5-sonnet-latest \
+	--dataset data/datasets/synthetic_dataset.jsonl
+```
+
+Grader-related options:
+
+- `--grader lexical|model|code|coding` (default: lexical; `coding` aliases `code`)
+- `--grader-model <model_name>`
+- `--grader-fallback-model <model_name>`
+- `--grader-max-tokens <int>`
+- `--code-timeout-seconds <float>`
+
+### Code Grader (deterministic tests)
+
+Use `--grader coding` (or `--grader code`) to score generated code by executing test cases declared in each dataset row.
+
+Dataset row format (additional optional field):
+
+```json
+{
+	"id": "code-1",
+	"prompt": "Write a Python function add(a, b) that returns the sum.",
+	"answer": "def add(a, b):\n    return a + b",
+	"code_grader": {
+		"mode": "function",
+		"function_name": "add",
+		"tests": [
+			{"name": "ints", "args": [2, 3], "expected": 5},
+			{"name": "negative", "args": [-1, 7], "expected": 6}
+		]
+	}
+}
+```
+
+Run with code grading:
+
+```bash
+python -m src.eval \
+	--mode demo \
+	--grader coding \
+	--dataset data/datasets/code_eval_sample.jsonl
+```
+
+Notes:
+- Code grading expects Python code in the model output (fenced `python` block preferred).
+- If `code_grader` is missing for a row, lexical metrics are kept and a rationale is added.
+- Generated code execution is intended for trusted datasets.
+
+## One-Command Workflow (Dataset + Eval)
+
+Run end-to-end workflow with grader integrated:
+
+```bash
+python -m src.workflow --mode demo --grader lexical --rows 25
+```
+
+Use model grader in API mode:
+
+```bash
+python -m src.workflow \
+	--mode api \
+	--grader model \
+	--model claude-3-5-sonnet-latest \
+	--grader-model claude-3-5-sonnet-latest \
+	--rows 50
+```
+
+Workflow defaults:
+
+- Creates `data/datasets/workflow_dataset.jsonl` if missing
+- Reuses existing dataset unless `--regenerate-dataset` is set
+- Forwards all grader options directly into `src.eval`

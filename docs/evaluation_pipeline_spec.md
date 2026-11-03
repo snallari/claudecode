@@ -12,6 +12,8 @@ In scope:
 - Synthetic dataset generation for athlete meal-plan prompts.
 - Batch evaluation of `prompt`/`answer` JSONL datasets.
 - Optional criteria-based scoring.
+- Optional model-based grader (LLM judge) scoring.
+- Optional deterministic code grader scoring via dataset-supplied test cases.
 - Optional XML/context prompt injection.
 - JSON, JSONL, and HTML reporting.
 
@@ -64,8 +66,20 @@ High-level flow:
 2. Resolve execution mode (`auto|api|demo`).
 3. Resolve extra prompt context (inline and/or file).
 4. Generate prediction per row.
-5. Compute row metrics + aggregate metrics.
+5. Compute row metrics + aggregate metrics (lexical or model grader).
 6. Write `predictions.jsonl`, `report.json`, `report.html`.
+
+### 3.3 Workflow Runner (`src/workflow.py`)
+CLI module:
+
+```bash
+python -m src.workflow [options]
+```
+
+Behavior:
+- Ensures dataset exists (generates with `src.dataset` when missing or when `--regenerate-dataset` is set).
+- Invokes `src.eval` as a subprocess with pass-through options.
+- Integrates grader configuration directly in workflow (`--grader`, `--grader-model`, `--grader-fallback-model`, `--grader-max-tokens`).
 
 ## 4) Data Contracts
 
@@ -79,11 +93,17 @@ Optional fields:
 - `topic: str`
 - `eval_criteria: list[str] | str`
 - `criteria: list[str] | str` (alias)
+- `code_grader: object` (optional deterministic code grading spec)
 
 Parsing rules:
 - Empty lines ignored.
 - Missing/empty `prompt` or `answer` -> validation error.
 - `eval_criteria` normalized to `list[str]`.
+- `code_grader` normalized (if present) into:
+  - `mode` (currently `function`)
+  - `function_name` (optional; auto-detected if omitted)
+  - `tests`: list of `{name?, args?, kwargs?, expected}`
+  - `timeout_seconds` (optional per-row override)
 
 ### 4.2 Prediction Output Row (`predictions.jsonl`)
 Per-row fields:
@@ -95,6 +115,11 @@ Per-row fields:
   - `criteria_score` (`0..1`)
   - `overall_score` (`0..100`)
   - `grade` (`A|B|C|D|F`)
+  - `grading_details`:
+    - `method` (`lexical|model`)
+    - `model` (when model grader enabled)
+    - `model_rationale` (when model grader enabled)
+    - `raw_response` (when model grader enabled)
 - Optional `error` string on failure
 
 ### 4.3 Run Report (`report.json`)
@@ -131,6 +156,12 @@ Includes:
 Final scale:
 - `overall_score = clamp(weighted * 100, 0, 100)`
 
+When `--grader code` is selected and a row has `code_grader.tests`, `overall_score` is overridden by:
+
+- `100 * (passed_tests / total_tests)`
+
+If code execution fails (syntax/runtime/timeout), score is `0` for that row.
+
 Grades:
 - `A >= 90`, `B >= 80`, `C >= 70`, `D >= 60`, else `F`
 
@@ -166,6 +197,11 @@ Supported options (current):
 - `--model`
 - `--fallback-model`
 - `--max-tokens`
+- `--grader` (`lexical|model|code|coding`)
+- `--grader-model`
+- `--grader-fallback-model`
+- `--grader-max-tokens`
+- `--code-timeout-seconds`
 - `--extra-prompt`
 - `--extra-prompt-file`
 - `--fail-fast`
@@ -177,11 +213,12 @@ Per run directory (`data/eval_runs/<run_name>/`):
 - `report.html`
 
 HTML report presents:
-- Summary cards (`Total Test Cases`, `Average Score`, `Pass Rate`)
+- Summary cards (`Total Test Cases`, `Average Score /100`, `Pass Rate ≥70`)
 - Per-row table with scenario, criteria, prediction, score, reasoning
 
 ## 9) Failure Handling
 - API errors produce row-level fallback with zeroed metrics and `error` field.
+- If `--grader model` is selected, API mode with valid key is required.
 - With `--fail-fast`, evaluation raises immediately on first failure.
 - Missing dataset or invalid schema raises early validation errors.
 
@@ -191,8 +228,8 @@ HTML report presents:
 - API mode depends on `ANTHROPIC_API_KEY` and model access.
 
 ## 11) Known Constraints
-- `overall_score` is computed on a `0..100` scale, while some HTML labels display `/10` style text.
-- Criteria scoring is lexical token overlap, not semantic compliance.
+- Criteria scoring is lexical token overlap, not semantic compliance when using `--grader lexical`.
+- Model grader outputs depend on prompt quality and model stability.
 
 ## 12) Suggested Future Enhancements
 - Align score display scale consistently across CLI/JSON/HTML.

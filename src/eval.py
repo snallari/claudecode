@@ -5,6 +5,8 @@ import html
 import json
 import os
 import re
+import subprocess
+import sys
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -17,6 +19,15 @@ from src.client import chat, get_text_from_response, print_api_error, resolve_mo
 from src.demo import build_demo_answer
 
 DEFAULT_MODEL = "claude-3-5-sonnet-latest"
+DEFAULT_GRADER = "lexical"
+DEFAULT_CODE_TIMEOUT_SECONDS = 3.0
+
+
+def normalize_grader_method(grader: str) -> str:
+    normalized = str(grader).strip().lower()
+    if normalized == "coding":
+        return "code"
+    return normalized
 
 
 def utc_timestamp() -> str:
@@ -98,6 +109,38 @@ def score_grade(score: float) -> str:
     return "F"
 
 
+def clamp_score_0_100(score: float) -> float:
+    return max(0.0, min(100.0, score))
+
+
+def extract_first_json_object(text: str) -> dict[str, Any] | None:
+    if not text:
+        return None
+
+    stripped = text.strip()
+    try:
+        parsed = json.loads(stripped)
+        if isinstance(parsed, dict):
+            return parsed
+    except json.JSONDecodeError:
+        pass
+
+    start_index = stripped.find("{")
+    end_index = stripped.rfind("}")
+    if start_index == -1 or end_index == -1 or end_index <= start_index:
+        return None
+
+    candidate = stripped[start_index : end_index + 1]
+    try:
+        parsed = json.loads(candidate)
+    except json.JSONDecodeError:
+        return None
+
+    if isinstance(parsed, dict):
+        return parsed
+    return None
+
+
 def parse_criteria(raw_criteria: Any) -> list[str]:
     if raw_criteria is None:
         return []
@@ -109,6 +152,53 @@ def parse_criteria(raw_criteria: Any) -> list[str]:
         return []
 
     return [criterion.strip() for criterion in criteria if str(criterion).strip()]
+
+
+def parse_code_grader_spec(raw_spec: Any) -> dict[str, Any] | None:
+    if raw_spec is None or not isinstance(raw_spec, dict):
+        return None
+
+    mode = str(raw_spec.get("mode", "function")).strip().lower() or "function"
+    function_name_raw = raw_spec.get("function_name")
+    function_name = str(function_name_raw).strip() if function_name_raw is not None else ""
+
+    tests_raw = raw_spec.get("tests", [])
+    normalized_tests: list[dict[str, Any]] = []
+    if isinstance(tests_raw, list):
+        for index, test_case in enumerate(tests_raw, start=1):
+            if not isinstance(test_case, dict):
+                continue
+
+            raw_args = test_case.get("args", [])
+            if isinstance(raw_args, list):
+                args = raw_args
+            else:
+                args = [raw_args]
+
+            raw_kwargs = test_case.get("kwargs", {})
+            kwargs = raw_kwargs if isinstance(raw_kwargs, dict) else {}
+
+            normalized_tests.append(
+                {
+                    "name": str(test_case.get("name", f"case_{index}")),
+                    "args": args,
+                    "kwargs": kwargs,
+                    "expected": test_case.get("expected"),
+                }
+            )
+
+    result: dict[str, Any] = {
+        "mode": mode,
+        "tests": normalized_tests,
+    }
+    if function_name:
+        result["function_name"] = function_name
+
+    timeout_raw = raw_spec.get("timeout_seconds")
+    if isinstance(timeout_raw, (int, float)) and timeout_raw > 0:
+        result["timeout_seconds"] = float(timeout_raw)
+
+    return result
 
 
 def load_jsonl_dataset(path: Path) -> list[dict[str, Any]]:
@@ -135,6 +225,7 @@ def load_jsonl_dataset(path: Path) -> list[dict[str, Any]]:
                     "prompt": prompt,
                     "answer": answer,
                     "eval_criteria": parse_criteria(row.get("eval_criteria", row.get("criteria", []))),
+                    "code_grader": parse_code_grader_spec(row.get("code_grader")),
                 }
             )
 
@@ -198,6 +289,326 @@ def resolve_extra_prompt(inline_text: str | None, file_path: str | None) -> str 
     return "\n\n".join(parts)
 
 
+def build_grader_prompt(
+    prompt: str,
+    reference: str,
+    prediction: str,
+    criteria: list[str],
+) -> str:
+    criteria_text = "\n".join(f"- {criterion}" for criterion in criteria) if criteria else "- No explicit criteria"
+    return (
+        "You are an evaluation grader.\n"
+        "Score the model prediction using the user question, reference answer, and optional criteria.\n"
+        "Use a strict 0-100 rubric where:\n"
+        "- 90-100: excellent, highly correct, complete, and aligned\n"
+        "- 80-89: strong, minor omissions\n"
+        "- 70-79: acceptable, notable gaps\n"
+        "- 60-69: weak, several issues\n"
+        "- 0-59: poor or incorrect\n\n"
+        "Return ONLY valid JSON with this schema:\n"
+        "{\"score\": <number 0-100>, \"grade\": \"A|B|C|D|F\", \"rationale\": \"brief explanation\"}\n\n"
+        f"Question:\n{prompt}\n\n"
+        f"Reference answer:\n{reference}\n\n"
+        f"Prediction:\n{prediction}\n\n"
+        f"Criteria:\n{criteria_text}\n"
+    )
+
+
+def model_grader_result(
+    *,
+    client: anthropic.Anthropic,
+    grader_model: str,
+    max_tokens: int,
+    prompt: str,
+    reference: str,
+    prediction: str,
+    criteria: list[str],
+) -> dict[str, Any]:
+    grader_response = chat(
+        client=client,
+        messages=[
+            {
+                "role": "user",
+                "content": build_grader_prompt(
+                    prompt=prompt,
+                    reference=reference,
+                    prediction=prediction,
+                    criteria=criteria,
+                ),
+            }
+        ],
+        model=grader_model,
+        max_tokens=max_tokens,
+        stream=False,
+    )
+    grader_text = get_text_from_response(grader_response).strip()
+    parsed = extract_first_json_object(grader_text)
+
+    if not parsed:
+        raise ValueError("Model grader did not return valid JSON.")
+
+    raw_score = float(parsed.get("score", 0.0))
+    score = clamp_score_0_100(raw_score)
+    grade = str(parsed.get("grade") or score_grade(score)).strip().upper()
+    if grade not in {"A", "B", "C", "D", "F"}:
+        grade = score_grade(score)
+
+    rationale = str(parsed.get("rationale", "")).strip() or "No rationale provided by grader model."
+    return {
+        "score": score,
+        "grade": grade,
+        "rationale": rationale,
+        "raw_response": grader_text,
+    }
+
+
+def extract_python_code(text: str) -> str:
+    if not text.strip():
+        return ""
+
+    fenced_python = re.search(r"```(?:python|py)\s*(.*?)```", text, flags=re.IGNORECASE | re.DOTALL)
+    if fenced_python:
+        return fenced_python.group(1).strip()
+
+    fenced_generic = re.search(r"```\s*(.*?)```", text, flags=re.DOTALL)
+    if fenced_generic:
+        return fenced_generic.group(1).strip()
+
+    return text.strip()
+
+
+def build_code_grader_runner_script() -> str:
+    return """
+import json
+import sys
+
+def emit(payload):
+    sys.stdout.write(json.dumps(payload, ensure_ascii=False))
+
+def error_payload(message):
+    return {
+        "passed": 0,
+        "total": 0,
+        "failures": [],
+        "error": message,
+    }
+
+raw = sys.stdin.read()
+try:
+    payload = json.loads(raw or "{}")
+except Exception:
+    emit(error_payload("Invalid grader payload JSON."))
+    raise SystemExit(0)
+
+code = str(payload.get("code", ""))
+spec = payload.get("spec", {})
+if not isinstance(spec, dict):
+    emit(error_payload("Invalid code grader spec."))
+    raise SystemExit(0)
+
+mode = str(spec.get("mode", "function")).strip().lower() or "function"
+if mode != "function":
+    emit(error_payload(f"Unsupported code grader mode: {mode}."))
+    raise SystemExit(0)
+
+tests = spec.get("tests", [])
+if not isinstance(tests, list) or not tests:
+    emit(error_payload("Code grader tests are missing or invalid."))
+    raise SystemExit(0)
+
+namespace = {}
+try:
+    exec(code, namespace)
+except Exception as exc:
+    emit(error_payload(f"Code execution failed: {exc}"))
+    raise SystemExit(0)
+
+function_name = spec.get("function_name")
+target = None
+if isinstance(function_name, str) and function_name.strip():
+    target = namespace.get(function_name.strip())
+    if not callable(target):
+        emit(error_payload(f"Function '{function_name.strip()}' not found or not callable."))
+        raise SystemExit(0)
+else:
+    for key, value in namespace.items():
+        if key.startswith("__"):
+            continue
+        if callable(value):
+            target = value
+            function_name = key
+            break
+    if target is None:
+        emit(error_payload("No callable function found in generated code."))
+        raise SystemExit(0)
+
+passed = 0
+failures = []
+for index, case in enumerate(tests, start=1):
+    if not isinstance(case, dict):
+        failures.append({"index": index, "message": "Test case must be an object."})
+        continue
+
+    args = case.get("args", [])
+    kwargs = case.get("kwargs", {})
+    expected = case.get("expected")
+    if not isinstance(args, list):
+        args = [args]
+    if not isinstance(kwargs, dict):
+        kwargs = {}
+
+    try:
+        actual = target(*args, **kwargs)
+    except Exception as exc:
+        failures.append({
+            "index": index,
+            "name": str(case.get("name", f"case_{index}")),
+            "message": f"Runtime error: {exc}",
+        })
+        continue
+
+    if actual == expected:
+        passed += 1
+    else:
+        failures.append(
+            {
+                "index": index,
+                "name": str(case.get("name", f"case_{index}")),
+                "message": f"Expected {expected!r}, got {actual!r}",
+            }
+        )
+
+emit(
+    {
+        "passed": passed,
+        "total": len(tests),
+        "failures": failures,
+        "error": None,
+        "function_name": function_name,
+    }
+)
+"""
+
+
+def code_grader_result(
+    *,
+    prediction: str,
+    code_spec: dict[str, Any],
+    timeout_seconds: float,
+) -> dict[str, Any]:
+    code = extract_python_code(prediction)
+    if not code:
+        return {
+            "score": 0.0,
+            "grade": "F",
+            "rationale": "No Python code found in prediction.",
+            "details": {
+                "passed": 0,
+                "total": 0,
+                "failures": [],
+            },
+        }
+
+    payload = {
+        "code": code,
+        "spec": code_spec,
+    }
+
+    try:
+        completed = subprocess.run(
+            [sys.executable, "-I", "-c", build_code_grader_runner_script()],
+            input=json.dumps(payload, ensure_ascii=False),
+            text=True,
+            capture_output=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return {
+            "score": 0.0,
+            "grade": "F",
+            "rationale": f"Code execution timed out after {timeout_seconds:.1f}s.",
+            "details": {
+                "passed": 0,
+                "total": 0,
+                "failures": [
+                    {
+                        "index": 0,
+                        "name": "timeout",
+                        "message": f"Execution exceeded {timeout_seconds:.1f}s",
+                    }
+                ],
+            },
+        }
+
+    stdout = completed.stdout.strip()
+    if not stdout:
+        stderr_text = completed.stderr.strip()
+        stderr_suffix = f" stderr={stderr_text}" if stderr_text else ""
+        return {
+            "score": 0.0,
+            "grade": "F",
+            "rationale": "Code grader returned an empty result." + stderr_suffix,
+            "details": {
+                "passed": 0,
+                "total": 0,
+                "failures": [],
+            },
+        }
+
+    try:
+        parsed = json.loads(stdout)
+    except json.JSONDecodeError:
+        return {
+            "score": 0.0,
+            "grade": "F",
+            "rationale": "Code grader returned invalid JSON output.",
+            "details": {
+                "passed": 0,
+                "total": 0,
+                "failures": [],
+            },
+        }
+
+    passed = int(parsed.get("passed", 0) or 0)
+    total = int(parsed.get("total", 0) or 0)
+    failures = parsed.get("failures", [])
+    if not isinstance(failures, list):
+        failures = []
+    execution_error = str(parsed.get("error") or "").strip()
+
+    if total > 0 and not execution_error:
+        score = (passed / total) * 100.0
+    else:
+        score = 0.0
+
+    score = clamp_score_0_100(score)
+    grade = score_grade(score)
+
+    if execution_error:
+        rationale = execution_error
+    else:
+        rationale = f"Passed {passed}/{total} tests."
+        if failures:
+            first_failure = failures[0]
+            if isinstance(first_failure, dict):
+                failure_message = str(first_failure.get("message", "")).strip()
+                if failure_message:
+                    rationale = f"{rationale} First failure: {failure_message}"
+
+    return {
+        "score": score,
+        "grade": grade,
+        "rationale": rationale,
+        "details": {
+            "passed": passed,
+            "total": total,
+            "failures": failures,
+            "function_name": parsed.get("function_name"),
+        },
+    }
+
+
 def aggregate_metrics(records: list[dict[str, Any]]) -> dict[str, float]:
     count = len(records)
     if count == 0:
@@ -255,7 +666,7 @@ def render_html_report(report: dict[str, Any], rows: list[dict[str, Any]]) -> st
     errors = html.escape(str(report.get("errors", 0)))
 
     avg_overall = float(metrics.get("avg_overall_score", 0.0))
-    pass_count = sum(1 for row in rows if float(row.get("metrics", {}).get("overall_score", 0.0)) >= 7.0)
+    pass_count = sum(1 for row in rows if float(row.get("metrics", {}).get("overall_score", 0.0)) >= 70.0)
     pass_rate = (pass_count / rows_evaluated_value * 100.0) if rows_evaluated_value else 0.0
 
     table_rows: list[str] = []
@@ -275,12 +686,20 @@ def render_html_report(report: dict[str, Any], rows: list[dict[str, Any]]) -> st
         criteria_html = "".join(f"<li>{html.escape(str(c))}</li>" for c in criteria_items)
         criteria_block = f"<ul>{criteria_html}</ul>" if criteria_html else "<span class='muted'>No criteria</span>"
 
-        reasoning = (
-            f"Exact match={exact_match_value:.2f}; "
-            f"Token F1={token_f1_value:.2f}; "
-            f"Criteria={criteria_value:.2f}."
-        )
-        score_cell_class = "score-high" if overall_value >= 7 else "score-low"
+        grading_details = row_metrics.get("grading_details", {})
+        grader_rationale = str(grading_details.get("rationale", "")).strip()
+        model_rationale = str(grading_details.get("model_rationale", "")).strip()
+        if grader_rationale:
+            reasoning = grader_rationale
+        elif model_rationale:
+            reasoning = model_rationale
+        else:
+            reasoning = (
+                f"Exact match={exact_match_value:.2f}; "
+                f"Token F1={token_f1_value:.2f}; "
+                f"Criteria={criteria_value:.2f}."
+            )
+        score_cell_class = "score-high" if overall_value >= 70 else "score-low"
 
         table_rows.append(
             "<tr>"
@@ -326,8 +745,8 @@ def render_html_report(report: dict[str, Any], rows: list[dict[str, Any]]) -> st
 
     <section class=\"cards\">
         <div class="card"><div class="label">Total Test Cases</div><div class="value">{rows_evaluated}</div></div>
-        <div class="card"><div class="label">Average Score</div><div class="value">{avg_overall:.1f} / 10</div></div>
-        <div class="card"><div class="label">Pass Rate (≥7)</div><div class="value">{pass_rate:.1f}%</div></div>
+        <div class="card"><div class="label">Average Score</div><div class="value">{avg_overall:.1f} / 100</div></div>
+        <div class="card"><div class="label">Pass Rate (≥70)</div><div class="value">{pass_rate:.1f}%</div></div>
     </section>
 
     <table>
@@ -379,6 +798,34 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--max-tokens", type=int, default=256, help="Max tokens per model response")
     parser.add_argument(
+        "--grader",
+        choices=["lexical", "model", "code", "coding"],
+        default=os.getenv("EVAL_GRADER", DEFAULT_GRADER),
+        help="Grading strategy: lexical (default), model, code, or coding",
+    )
+    parser.add_argument(
+        "--grader-model",
+        default=os.getenv("ANTHROPIC_GRADER_MODEL"),
+        help="Model used for grading when --grader model (defaults to --model)",
+    )
+    parser.add_argument(
+        "--grader-fallback-model",
+        default=os.getenv("ANTHROPIC_GRADER_FALLBACK_MODEL"),
+        help="Fallback model for grader model resolution",
+    )
+    parser.add_argument(
+        "--grader-max-tokens",
+        type=int,
+        default=300,
+        help="Max tokens for grader model responses",
+    )
+    parser.add_argument(
+        "--code-timeout-seconds",
+        type=float,
+        default=DEFAULT_CODE_TIMEOUT_SECONDS,
+        help="Timeout in seconds for executing generated code per row when --grader code",
+    )
+    parser.add_argument(
         "--extra-prompt",
         default=None,
         help="Optional inline extra prompt/context (supports XML tags)",
@@ -395,6 +842,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     load_dotenv()
     args = parse_args()
+    grader_method = normalize_grader_method(args.grader)
 
     rows = load_jsonl_dataset(Path(args.dataset))
     if args.rows is not None:
@@ -410,6 +858,7 @@ def main() -> None:
     client: anthropic.Anthropic | None = None
     mode = requested_mode
     resolved_model = args.model
+    resolved_grader_model = args.grader_model or args.model
 
     if requested_mode == "auto":
         mode = "api" if api_key else "demo"
@@ -423,6 +872,20 @@ def main() -> None:
         if resolution_note:
             print(resolution_note)
 
+        if grader_method == "model":
+            resolved_grader_model, grader_resolution_note = resolve_model(
+                client,
+                resolved_grader_model,
+                args.grader_fallback_model,
+            )
+            if grader_resolution_note:
+                print(f"Grader: {grader_resolution_note}")
+    elif grader_method == "model":
+        raise RuntimeError("--grader model requires API mode. Use --mode api (or auto with API key).")
+
+    if grader_method == "code" and args.code_timeout_seconds <= 0:
+        raise ValueError("--code-timeout-seconds must be greater than 0")
+
     run_name = args.run_name or utc_timestamp()
     run_dir = Path(args.output_dir) / run_name
     predictions_path = run_dir / "predictions.jsonl"
@@ -433,13 +896,16 @@ def main() -> None:
     prediction_rows: list[dict[str, Any]] = []
     error_count = 0
 
-    print(f"Starting evaluation: rows={len(rows)} mode={mode} run={run_name}")
+    print(
+        f"Starting evaluation: rows={len(rows)} mode={mode} grader={grader_method} run={run_name}"
+    )
 
     for index, row in enumerate(rows, start=1):
         row_id = row["id"]
         prompt = row["prompt"]
         reference = row["answer"]
         eval_criteria = [str(criterion) for criterion in row.get("eval_criteria", [])]
+        code_grader_spec = row.get("code_grader")
 
         try:
             prediction = generate_prediction(
@@ -462,6 +928,52 @@ def main() -> None:
                 criteria_value,
             )
             metrics["grade"] = score_grade(metrics["overall_score"])
+
+            if grader_method == "model":
+                if client is None:
+                    raise RuntimeError("Anthropic client is required for model grading.")
+                grader_output = model_grader_result(
+                    client=client,
+                    grader_model=resolved_grader_model,
+                    max_tokens=args.grader_max_tokens,
+                    prompt=prompt,
+                    reference=reference,
+                    prediction=prediction,
+                    criteria=eval_criteria,
+                )
+                metrics["overall_score"] = grader_output["score"]
+                metrics["grade"] = grader_output["grade"]
+                metrics["grading_details"] = {
+                    "method": "model",
+                    "model": resolved_grader_model,
+                    "model_rationale": grader_output["rationale"],
+                    "raw_response": grader_output["raw_response"],
+                }
+            elif grader_method == "code":
+                if code_grader_spec:
+                    timeout_seconds = float(code_grader_spec.get("timeout_seconds", args.code_timeout_seconds))
+                    grader_output = code_grader_result(
+                        prediction=prediction,
+                        code_spec=code_grader_spec,
+                        timeout_seconds=timeout_seconds,
+                    )
+                    metrics["overall_score"] = grader_output["score"]
+                    metrics["grade"] = grader_output["grade"]
+                    metrics["grading_details"] = {
+                        "method": "code",
+                        "rationale": grader_output["rationale"],
+                        "details": grader_output["details"],
+                    }
+                else:
+                    metrics["grading_details"] = {
+                        "method": "code",
+                        "rationale": "No code_grader spec provided for this row; using lexical metrics only.",
+                    }
+            else:
+                metrics["grading_details"] = {
+                    "method": "lexical",
+                }
+
             prediction_rows.append(
                 {
                     "id": row_id,
@@ -470,6 +982,7 @@ def main() -> None:
                     "reference": reference,
                     "prediction": prediction,
                     "eval_criteria": eval_criteria,
+                    "code_grader": code_grader_spec,
                     "metrics": metrics,
                 }
             )
@@ -484,6 +997,7 @@ def main() -> None:
                     "reference": reference,
                     "prediction": "",
                     "eval_criteria": eval_criteria,
+                    "code_grader": code_grader_spec,
                     "metrics": {
                         "exact_match": 0.0,
                         "token_f1": 0.0,
@@ -506,6 +1020,7 @@ def main() -> None:
                     "reference": reference,
                     "prediction": "",
                     "eval_criteria": eval_criteria,
+                    "code_grader": code_grader_spec,
                     "metrics": {
                         "exact_match": 0.0,
                         "token_f1": 0.0,
@@ -533,6 +1048,10 @@ def main() -> None:
         "mode": mode,
         "requested_mode": requested_mode,
         "model": resolved_model if mode == "api" else "demo-local",
+        "grader": {
+            "method": grader_method,
+            "model": resolved_grader_model if grader_method == "model" else None,
+        },
         "started_at": started_at,
         "finished_at": finished_at,
         "overall_score": aggregate["avg_overall_score"],
