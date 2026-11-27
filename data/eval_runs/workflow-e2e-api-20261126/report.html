@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prompt Evaluation Report - workflow-e2e-api-20261126</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; margin: 18px; color: #111827; background: #f8f8f8; }
+        h1 { margin: 0 0 12px 0; font-size: 34px; font-weight: 700; }
+        .meta { font-size: 12px; color: #4b5563; margin-bottom: 12px; }
+        .cards { display: grid; grid-template-columns: repeat(3, minmax(190px, 1fr)); gap: 12px; margin-bottom: 14px; }
+        .card { border: 1px solid #d1d5db; border-radius: 2px; background: #fff; padding: 10px; }
+        .label { font-size: 11px; color: #374151; text-transform: uppercase; }
+        .value { margin-top: 4px; font-size: 28px; font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; background: #fff; font-size: 12px; }
+        th, td { border: 1px solid #d1d5db; text-align: left; vertical-align: top; padding: 8px; }
+        th { background: #111827; color: #fff; font-size: 11px; text-transform: uppercase; }
+        ul { margin: 0; padding-left: 16px; }
+        li { margin: 0 0 3px 0; }
+        .muted { color: #6b7280; font-size: 11px; }
+        .score-pill { display: inline-block; border-radius: 3px; min-width: 40px; text-align: center; padding: 2px 6px; font-weight: 700; }
+        .score-high { background: #dcfce7; color: #14532d; }
+        .score-low { background: #fee2e2; color: #7f1d1d; }
+    </style>
+</head>
+<body>
+    <h1>Prompt Evaluation Report</h1>
+    <div class="meta">Run: <strong>workflow-e2e-api-20261126</strong> · Dataset: data/datasets/workflow_dataset.jsonl · Mode: api · Model: claude-sonnet-5-5 · Errors: 0</div>
+
+    <section class="cards">
+        <div class="card"><div class="label">Total Test Cases</div><div class="value">2</div></div>
+        <div class="card"><div class="label">Average Score</div><div class="value">20.0 / 100</div></div>
+        <div class="card"><div class="label">Pass Rate (≥70)</div><div class="value">0.0%</div></div>
+    </section>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Prompt Inputs</th>
+                <th>Scenario</th>
+                <th>Solution Criteria</th>
+                <th>Prediction</th>
+                <th>Score</th>
+                <th>Reasoning</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>id:</strong> 1<br/><strong>topic:</strong> </td><td>What fullstack React, Node.js, and .NET job postings were published in the last 24 hours for Fullstack Developer?</td><td><span class='muted'>No criteria</span></td><td>I can&#x27;t answer that, because I don&#x27;t have real-time access to job boards or the ability to search the web, so I can&#x27;t see what was posted in the last 24 hours. To find those postings, search &quot;Fullstack Developer&quot; on LinkedIn Jobs, Indeed, Glassdoor, or Stack Overflow Jobs and apply the &quot;Past 24 hours&quot; date filter. Use keywords such as &quot;React Node.js .NET&quot; or &quot;React C# ASP.NET Core Node&quot; and add your location or &quot;remote.&quot; You can also set up job alerts with the same filters so new matching postings are emailed to you daily, and check the careers pages of specific companies you&#x27;re interested in. If you paste postings here, I can help you evaluate them, tailor your resume, or prepare for interviews.</td><td><span class='score-pill score-low'>10.0</span></td><td>The prediction does not provide the posting the reference names (Helio Systems — Fullstack Developer, Remote, React/Node.js/.NET, posted 8 hours ago). It says it cannot access real-time data and gives generic job-search advice. That advice is honest and sensible, but it does not answer the question, so it earns minimal credit.</td></tr>
+<tr><td><strong>id:</strong> 2<br/><strong>topic:</strong> </td><td>List the fullstack React, Node.js, and .NET job postings from the last 24 hours for Full Stack Developer roles.</td><td><span class='muted'>No criteria</span></td><td>I can&#x27;t list job postings from the last 24 hours because I don&#x27;t have real-time access to job boards or the internet, and anything I named would be fabricated. To get that list quickly, search LinkedIn Jobs, Indeed, Glassdoor, Dice, or Wellfound with a query like &quot;Full Stack Developer&quot; AND (React) AND (Node.js) AND (&quot;.NET&quot; OR &quot;C#&quot; OR &quot;ASP.NET&quot;), then filter by &quot;Date posted: Past 24 hours&quot; (on LinkedIn, use the Date Posted filter; on Indeed, use &quot;Last 24 hours&quot; under Date Posted). Set up job alerts with the same filters so new matches are emailed to you daily, and consider adding filters for remote, location, or experience level. If you paste postings you find, I can help you compare</td><td><span class='score-pill score-low'>30.0</span></td><td>The prediction does not list the reference posting (CrestPoint AI, New York, NY). It refuses, citing no real-time access. That refusal is honest and avoids fabrication, and the search tips are useful and relevant. But the question asks for a list, so the answer fails to deliver the core content. The response also cuts off mid-sentence at the end. Under a strict rubric, an answer that does not provide the requested information scores poorly.</td></tr>
+        </tbody>
+    </table>
+</body>
+</html>

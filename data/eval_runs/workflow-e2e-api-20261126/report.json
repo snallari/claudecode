@@ -1,0 +1,36 @@
+{
+  "run_name": "workflow-e2e-api-20261126",
+  "datasets": [
+    "data/datasets/workflow_dataset.jsonl"
+  ],
+  "rows_evaluated": 2,
+  "errors": 0,
+  "mode": "api",
+  "requested_mode": "api",
+  "model": "claude-sonnet-5-5",
+  "grader": {
+    "method": "model",
+    "model": "claude-sonnet-5-5"
+  },
+  "started_at": "2026-11-27T04:14:30.064730+00:00",
+  "finished_at": "2026-11-27T04:14:39.437492+00:00",
+  "overall_score": 20.0,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.1638857830910811,
+    "avg_criteria_score": 0.0,
+    "avg_overall_score": 20.0,
+    "avg_reference_tokens": 24.5,
+    "avg_prediction_tokens": 128.0
+  },
+  "prompting": {
+    "template": null,
+    "extra_context_enabled": false
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/workflow-e2e-api-20261126/predictions.jsonl",
+    "report": "data/eval_runs/workflow-e2e-api-20261126/report.json",
+    "html_report": "data/eval_runs/workflow-e2e-api-20261126/report.html"
+  }
+}

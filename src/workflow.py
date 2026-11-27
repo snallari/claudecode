@@ -172,9 +172,12 @@ def run_rag_steps(args: argparse.Namespace) -> None:
             max_spec_chunks=args.max_spec_chunks,
             implementation_target=args.implementation_target,
         )
+        spec_markdown = str(spec_result["spec_markdown"]).strip()
+        if not spec_markdown:
+            raise ValueError("Generated workflow spec markdown is empty; file write aborted.")
         spec_doc_path = normalize_path(args.spec_doc_path)
         spec_doc_path.parent.mkdir(parents=True, exist_ok=True)
-        spec_doc_path.write_text(str(spec_result["spec_markdown"]), encoding="utf-8")
+        spec_doc_path.write_text(spec_markdown, encoding="utf-8")
         print(f"[workflow-rag] retrieved contexts: {len(spec_result['retrieved_contexts'])}")
         print(f"[workflow-rag] wrote markdown: {spec_doc_path}")
 

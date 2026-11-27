@@ -467,6 +467,9 @@ class RagPipeline:
     def generate_spec_doc(self, spec_query: str, max_spec_chunks: int, implementation_target: str) -> dict[str, Any]:
         query_vector = self.embedder.embed_query(spec_query)
         retrieved_contexts = self.vector_db.search(query_vector, top_k=max_spec_chunks)
+        response_stop_reason: str | None = None
+        response_block_types: list[str] = []
+        response_block_text_lengths: list[int] = []
 
         if self.active_mode == "demo":
             spec_markdown = self.build_demo_spec_doc(retrieved_contexts, spec_query, implementation_target)
@@ -481,7 +484,20 @@ class RagPipeline:
                 max_tokens=self.config.max_tokens,
                 stream=False,
             )
+            response_stop_reason = str(getattr(response, "stop_reason", "")) or None
+            content_blocks = getattr(response, "content", []) or []
+            response_block_types = [str(getattr(block, "type", type(block).__name__)) for block in content_blocks]
+            response_block_text_lengths = [len(str(getattr(block, "text", "") or "")) for block in content_blocks]
             spec_markdown = get_text_from_response(response).strip()
+
+        if not str(spec_markdown).strip():
+            raise ValueError(
+                "Generated specification markdown is empty. "
+                "Try increasing --max-tokens, refining --spec-query, or switching models. "
+                f"stop_reason={response_stop_reason}, "
+                f"block_types={response_block_types}, "
+                f"block_text_lengths={response_block_text_lengths}"
+            )
 
         return {
             "spec_query": spec_query,
@@ -803,9 +819,12 @@ def main() -> None:
                 max_spec_chunks=args.max_spec_chunks,
                 implementation_target=args.implementation_target,
             )
+            spec_markdown = str(spec_result["spec_markdown"]).strip()
+            if not spec_markdown:
+                raise ValueError("Generated spec markdown is empty; file write aborted.")
             spec_doc_path = normalize_path(args.spec_doc_path)
             spec_doc_path.parent.mkdir(parents=True, exist_ok=True)
-            spec_doc_path.write_text(str(spec_result["spec_markdown"]), encoding="utf-8")
+            spec_doc_path.write_text(spec_markdown, encoding="utf-8")
             print(f"[spec] retrieved contexts: {len(spec_result['retrieved_contexts'])}")
             print(f"[spec] wrote markdown: {spec_doc_path}")
         except anthropic.APIError as error:

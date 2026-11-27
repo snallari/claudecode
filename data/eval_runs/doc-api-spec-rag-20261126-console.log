@@ -1,0 +1,22 @@
+W1126 23:39:21.343000 37563 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[run] vector_db entries before=1
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 6335.71it/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[rag] mode resolved requested=api active=api
+Configured models unavailable. Using discovered model 'claude-sonnet-5-5'.
+
+[upload] /Users/sairam/Documents/sai-ai/anthropic/data/context/document_processing_requirements.md
+[chunking] produced 7 chunks
+  - document_processing_requirements-1: # Document Processing System – Functional & Technical Requirements ## 1. Objective Build an event-driven document processing system that rec...
+  - document_processing_requirements-2: DOCX, JSON, and other agreed document formats. - Generate a unique document ID for every document. - Capture document metadata: - Document I...
+  - document_processing_requirements-3: - Perform schema and business validation. - Support configurable processing rules based on document type. - Update the document processing s...
+  - document_processing_requirements-4: versioning. - Validate incoming requests against database-defined schemas. - Provide appropriate error responses. **Suggested API configurat...
+  - document_processing_requirements-5: ### FR-08: Monitoring and Logging - Track Kafka consumer lag. - Monitor document processing throughput. - Track processing failures and retr...
+  - document_processing_requirements-6: | Original document metadata | | DOCUMENT_DATA | Extracted and processed data | | DOCUMENT_PROCESSING_HISTORY | Processing lifecycle | | DOC...
+  - document_processing_requirements-7: database records. 9. Failed documents can be retried. 10. Permanently failed messages are routed to the dead-letter topic. 11. API definitio...
+[embedding] embedded 7 chunks with model=sentence-transformers/all-MiniLM-L6-v2 dim=384
+[vector-db] upserted into /Users/sairam/Documents/sai-ai/anthropic/data/vector_db/chroma collection=rag_chunks total_entries=8
+[run] spec generation attempt=1
+[run] attempt failed: Generated specification markdown is empty. Try increasing --max-tokens, refining --spec-query, or switching models. stop_reason=max_tokens, block_types=['thinking'], block_text_lengths=[0]
+[run] spec generation attempt=2
+[run] success: wrote spec to /Users/sairam/Documents/sai-ai/anthropic/data/spec_docs/document_processing_api_spec.md chars=639 contexts=8

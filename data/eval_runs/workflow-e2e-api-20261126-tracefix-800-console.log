@@ -1,0 +1,34 @@
+W1126 23:19:47.521000 24764 .venv/lib/python3.14/site-packages/torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[workflow-rag] loaded vector DB entries=1 from /Users/sairam/Documents/sai-ai/anthropic/data/vector_db/chroma collection=rag_chunks
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 7658.45it/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/sairam/Documents/sai-ai/anthropic/src/workflow.py", line 235, in <module>
+    main()
+    ~~~~^^
+  File "/Users/sairam/Documents/sai-ai/anthropic/src/workflow.py", line 189, in main
+    run_rag_steps(args)
+    ~~~~~~~~~~~~~^^^^^^
+  File "/Users/sairam/Documents/sai-ai/anthropic/src/workflow.py", line 170, in run_rag_steps
+    spec_result = rag_pipeline.generate_spec_doc(
+        spec_query=args.spec_query,
+        max_spec_chunks=args.max_spec_chunks,
+        implementation_target=args.implementation_target,
+    )
+  File "/Users/sairam/Documents/sai-ai/anthropic/src/rag.py", line 487, in generate_spec_doc
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Generated specification markdown is empty. Try increasing --max-tokens, refining --spec-query, or switching models.
+[rag] mode resolved requested=api active=api
+Configured models unavailable. Using discovered model 'claude-sonnet-5-5'.
+Grader: Configured models unavailable. Using discovered model 'claude-sonnet-5-5'.
+
+[upload] /Users/sairam/Documents/sai-ai/anthropic/data/context/athlete_context.xml
+[chunking] produced 1 chunks
+  - athlete_context-1: <athlete_information> - Height: 5'2" - Weight: 147 lbs - Goal: Build muscle - Dietary restrictions: protein/meat </athlete_information>
+[embedding] embedded 1 chunks with model=sentence-transformers/all-MiniLM-L6-v2 dim=384
+[vector-db] upserted into /Users/sairam/Documents/sai-ai/anthropic/data/vector_db/chroma collection=rag_chunks total_entries=1
+[workflow-rag] completed upload+index for 1 document(s), chunks=1

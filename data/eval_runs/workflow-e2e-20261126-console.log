@@ -1,0 +1,35 @@
+W1126 23:11:42.035000 21377 .venv/lib/python3.14/site-packages/torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[workflow-rag] loaded vector DB entries=0 from /Users/sairam/Documents/sai-ai/anthropic/data/vector_db/chroma collection=rag_chunks
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 7269.52it/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[rag] mode resolved requested=demo active=demo
+
+[upload] /Users/sairam/Documents/sai-ai/anthropic/data/context/athlete_context.xml
+[chunking] produced 1 chunks
+  - athlete_context-1: <athlete_information> - Height: 5'2" - Weight: 147 lbs - Goal: Build muscle - Dietary restrictions: protein/meat </athlete_information>
+[embedding] embedded 1 chunks with model=sentence-transformers/all-MiniLM-L6-v2 dim=384
+[vector-db] upserted into /Users/sairam/Documents/sai-ai/anthropic/data/vector_db/chroma collection=rag_chunks total_entries=1
+[workflow-rag] completed upload+index for 1 document(s), chunks=1
+[workflow-rag] retrieved contexts: 1
+[workflow-rag] wrote markdown: /Users/sairam/Documents/sai-ai/anthropic/data/spec_docs/workflow_e2e_generated_spec.md
+Using existing dataset: data/datasets/workflow_dataset.jsonl
+[step] Loading dataset from data/datasets/workflow_dataset.jsonl
+[step] Loaded 25 rows from data/datasets/workflow_dataset.jsonl
+[step] Applied eval row limit: 2
+[step] Loaded 2 total rows across 1 dataset(s)
+[step] Execution mode resolved: requested=demo, active=demo
+[step] Run artifacts directory: data/eval_runs/workflow-e2e-20261126
+Starting evaluation: rows=2 mode=demo grader=lexical run=workflow-e2e-20261126
+[row 1/2] start id=1
+[row 1/2] completed
+[row 2/2] start id=2
+[row 2/2] completed
+Processed 2/2
+[step] Writing predictions JSONL to data/eval_runs/workflow-e2e-20261126/predictions.jsonl
+[step] Writing JSON report to data/eval_runs/workflow-e2e-20261126/report.json
+[step] Writing HTML report to data/eval_runs/workflow-e2e-20261126/report.html
+Evaluation complete
+Report: data/eval_runs/workflow-e2e-20261126/report.json
+Predictions: data/eval_runs/workflow-e2e-20261126/predictions.jsonl
+HTML score report: data/eval_runs/workflow-e2e-20261126/report.html
+Summary: avg_overall_score=14.2, exact_match_rate=0.000, avg_token_f1=0.202, avg_criteria_score=0.000, errors=0

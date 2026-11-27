@@ -83,8 +83,12 @@ def get_text_from_response(response) -> str:
     if hasattr(response, "content"):
         if not response.content:
             return ""
-        first_block = response.content[0]
-        return getattr(first_block, "text", "")
+        chunks: list[str] = []
+        for block in response.content:
+            text = getattr(block, "text", None)
+            if text:
+                chunks.append(str(text))
+        return "".join(chunks)
 
     chunks: list[str] = []
     for event in response:

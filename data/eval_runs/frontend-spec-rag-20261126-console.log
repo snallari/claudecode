@@ -1,0 +1,27 @@
+W1126 23:53:42.396000 42114 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+[run] vector_db entries before=8
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 6470.66it/s]
+[rag] mode resolved requested=api active=api
+Configured models unavailable. Using discovered model 'claude-sonnet-5-5'.
+
+[upload] /Users/sairam/Documents/sai-ai/anthropic/data/context/react_frontend_requirements.md
+[chunking] produced 4 chunks
+  - react_frontend_requirements-1: # React Frontend Requirements – Document Processing System ## 1. Technology Stack - React with TypeScript - Redux Toolkit for application st...
+  - react_frontend_requirements-2: Processing Dashboard Display uploaded documents in a tabular view. Required columns: - Document ID - Document Name - Document Type - Uploade...
+  - react_frontend_requirements-3: Error Handling - Display meaningful API error messages. - Handle network failures. - Display loading and empty states. - Handle expired auth...
+  - react_frontend_requirements-4: queries after document upload or retry. ## 5. UI Component Structure Suggested component organization: - DocumentUpload - DocumentDashboard...
+[embedding] embedded 4 chunks with model=sentence-transformers/all-MiniLM-L6-v2 dim=384
+[vector-db] upserted into /Users/sairam/Documents/sai-ai/anthropic/data/vector_db/chroma collection=rag_chunks total_entries=12
+[run] spec generation attempt=1
+[run] attempt failed: Generated specification markdown is empty. Try increasing --max-tokens, refining --spec-query, or switching models. stop_reason=max_tokens, block_types=['thinking'], block_text_lengths=[0]
+[run] spec generation attempt=2
+[run] attempt failed: Generated specification markdown is empty. Try increasing --max-tokens, refining --spec-query, or switching models. stop_reason=max_tokens, block_types=['thinking'], block_text_lengths=[0]
+[run] spec generation attempt=3
+[run] attempt failed: Generated specification markdown is empty. Try increasing --max-tokens, refining --spec-query, or switching models. stop_reason=max_tokens, block_types=['thinking'], block_text_lengths=[0]
+[run] spec generation attempt=4
+[run] attempt failed: Generated specification markdown is empty. Try increasing --max-tokens, refining --spec-query, or switching models. stop_reason=max_tokens, block_types=['thinking'], block_text_lengths=[0]
+[run] spec generation attempt=5
+[run] attempt failed: Generated specification markdown is empty. Try increasing --max-tokens, refining --spec-query, or switching models. stop_reason=max_tokens, block_types=['thinking'], block_text_lengths=[0]
+[run] spec generation attempt=6
+[run] attempt failed: Generated specification markdown is empty. Try increasing --max-tokens, refining --spec-query, or switching models. stop_reason=max_tokens, block_types=['thinking'], block_text_lengths=[0]
+Failed to generate complete spec after retries. Last error: Generated specification markdown is empty. Try increasing --max-tokens, refining --spec-query, or switching models. stop_reason=max_tokens, block_types=['thinking'], block_text_lengths=[0]
