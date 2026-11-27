@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prompt Evaluation Report - workflow-api-model-20261115</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; margin: 18px; color: #111827; background: #f8f8f8; }
+        h1 { margin: 0 0 12px 0; font-size: 34px; font-weight: 700; }
+        .meta { font-size: 12px; color: #4b5563; margin-bottom: 12px; }
+        .cards { display: grid; grid-template-columns: repeat(3, minmax(190px, 1fr)); gap: 12px; margin-bottom: 14px; }
+        .card { border: 1px solid #d1d5db; border-radius: 2px; background: #fff; padding: 10px; }
+        .label { font-size: 11px; color: #374151; text-transform: uppercase; }
+        .value { margin-top: 4px; font-size: 28px; font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; background: #fff; font-size: 12px; }
+        th, td { border: 1px solid #d1d5db; text-align: left; vertical-align: top; padding: 8px; }
+        th { background: #111827; color: #fff; font-size: 11px; text-transform: uppercase; }
+        ul { margin: 0; padding-left: 16px; }
+        li { margin: 0 0 3px 0; }
+        .muted { color: #6b7280; font-size: 11px; }
+        .score-pill { display: inline-block; border-radius: 3px; min-width: 40px; text-align: center; padding: 2px 6px; font-weight: 700; }
+        .score-high { background: #dcfce7; color: #14532d; }
+        .score-low { background: #fee2e2; color: #7f1d1d; }
+    </style>
+</head>
+<body>
+    <h1>Prompt Evaluation Report</h1>
+    <div class="meta">Run: <strong>workflow-api-model-20261115</strong> · Dataset: data/datasets/dataset_class_smoke.jsonl · Mode: api · Model: claude-sonnet-5-5 · Errors: 0</div>
+
+    <section class="cards">
+        <div class="card"><div class="label">Total Test Cases</div><div class="value">2</div></div>
+        <div class="card"><div class="label">Average Score</div><div class="value">10.0 / 100</div></div>
+        <div class="card"><div class="label">Pass Rate (≥70)</div><div class="value">0.0%</div></div>
+    </section>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Prompt Inputs</th>
+                <th>Scenario</th>
+                <th>Solution Criteria</th>
+                <th>Prediction</th>
+                <th>Score</th>
+                <th>Reasoning</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>id:</strong> 1<br/><strong>topic:</strong> </td><td>What fullstack React, Node.js, and .NET job postings were published in the last 24 hours for Fullstack Developer?</td><td><span class='muted'>No criteria</span></td><td>I can&#x27;t browse live job boards, so I can&#x27;t tell you which postings went up in the last 24 hours. Anything I listed would be made up.
+
+**Fastest way to find them yourself:**
+
+- **LinkedIn Jobs:** search `Fullstack Developer React Node.js .NET`, then set Date posted → Past 24 hours.
+- **Indeed:** search the same keywords, then set Date posted → Last 24 hours (or use `&amp;fromage=1` in the URL).
+- **Glassdoor:** filter Date posted → Last day.
+- **Wellfound, Otta/Welcome to the Jungle, We Work Remotely:** good for startups and remote roles, and they sort by newest.
+
+**Boolean search string:**
+`(&quot;full stack&quot; OR fullstack) AND React AND</td><td><span class='score-pill score-low'>20.0</span></td><td>The reference answer lists one specific posting (Helio Systems, Fullstack Developer, Remote). The prediction gives no postings and says it can&#x27;t browse live job boards. That is honest and avoids fabrication, and its search tips are somewhat helpful. But it does not answer the question, and the Boolean search string is cut off mid-sentence. Substantive correctness and completeness are very low.</td></tr>
+<tr><td><strong>id:</strong> 2<br/><strong>topic:</strong> </td><td>List the fullstack React, Node.js, and .NET job postings from the last 24 hours for Full Stack Developer roles.</td><td><span class='muted'>No criteria</span></td><td></td><td><span class='score-pill score-low'>0.0</span></td><td>The prediction is empty. It lists no job postings and does not mention the CrestPoint AI Full Stack Developer role from the reference answer, so it fails to answer the question.</td></tr>
+        </tbody>
+    </table>
+</body>
+</html>

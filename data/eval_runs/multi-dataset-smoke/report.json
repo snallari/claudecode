@@ -1,0 +1,37 @@
+{
+  "run_name": "multi-dataset-smoke",
+  "datasets": [
+    "data/datasets/synthetic_dataset.jsonl",
+    "data/datasets/code_eval_sample.jsonl"
+  ],
+  "rows_evaluated": 2,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "grader": {
+    "method": "lexical",
+    "model": null
+  },
+  "started_at": "2026-11-15T22:39:51.283688+00:00",
+  "finished_at": "2026-11-15T22:39:51.284233+00:00",
+  "overall_score": 14.154849688031762,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.20221213840045377,
+    "avg_criteria_score": 0.0,
+    "avg_overall_score": 14.154849688031762,
+    "avg_reference_tokens": 24.5,
+    "avg_prediction_tokens": 59.5
+  },
+  "extra_prompt": {
+    "enabled": false,
+    "file": null
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/multi-dataset-smoke/predictions.jsonl",
+    "report": "data/eval_runs/multi-dataset-smoke/report.json",
+    "html_report": "data/eval_runs/multi-dataset-smoke/report.html"
+  }
+}

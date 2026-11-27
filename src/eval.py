@@ -646,6 +646,33 @@ def aggregate_metrics(records: list[dict[str, Any]]) -> dict[str, float]:
     }
 
 
+def build_failed_prediction_row(
+    row: dict[str, Any],
+    *,
+    eval_criteria: list[str],
+    code_grader_spec: dict[str, Any] | None,
+    error: Exception,
+) -> dict[str, Any]:
+    return {
+        "id": row["id"],
+        "dataset": row.get("dataset", ""),
+        "topic": row.get("topic", ""),
+        "prompt": row["prompt"],
+        "reference": row["answer"],
+        "prediction": "",
+        "eval_criteria": eval_criteria,
+        "code_grader": code_grader_spec,
+        "metrics": {
+            "exact_match": 0.0,
+            "token_f1": 0.0,
+            "criteria_score": 0.0,
+            "overall_score": 0.0,
+            "grade": "F",
+        },
+        "error": str(error),
+    }
+
+
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as file:
@@ -662,7 +689,8 @@ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
 def render_html_report(report: dict[str, Any], rows: list[dict[str, Any]]) -> str:
     metrics = report.get("metrics", {})
     run_name = html.escape(str(report.get("run_name", "")))
-    dataset = html.escape(str(report.get("dataset", "")))
+    dataset_text = ", ".join(str(item) for item in report.get("datasets", []))
+    dataset = html.escape(dataset_text)
     mode = html.escape(str(report.get("mode", "")))
     model = html.escape(str(report.get("model", "")))
     rows_evaluated_value = int(report.get("rows_evaluated", 0) or 0)
@@ -780,7 +808,13 @@ def write_html(path: Path, content: str) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run prompt/answer evaluation on a JSONL dataset.")
-    parser.add_argument("--dataset", default="data/datasets/synthetic_dataset.jsonl", help="Path to JSONL dataset")
+    parser.add_argument(
+        "--dataset",
+        dest="datasets",
+        action="append",
+        default=[],
+        help="Path to a JSONL dataset. Repeat to pass multiple datasets.",
+    )
     parser.add_argument(
         "--output-dir",
         default="data/eval_runs",
@@ -849,9 +883,17 @@ def main() -> None:
     grader_method = normalize_grader_method(args.grader)
     log_step(f"Arguments parsed. Grader method resolved to '{grader_method}'.")
 
-    log_step(f"Loading dataset from {args.dataset}")
-    rows = load_jsonl_dataset(Path(args.dataset))
-    log_step(f"Loaded {len(rows)} dataset rows")
+    dataset_paths = args.datasets or ["data/datasets/synthetic_dataset.jsonl"]
+    rows: list[dict[str, Any]] = []
+    for dataset_path in dataset_paths:
+        log_step(f"Loading dataset from {dataset_path}")
+        dataset_rows = load_jsonl_dataset(Path(dataset_path))
+        for row in dataset_rows:
+            row["dataset"] = str(Path(dataset_path))
+        rows.extend(dataset_rows)
+        log_step(f"Loaded {len(dataset_rows)} dataset rows from {dataset_path}")
+
+    log_step(f"Loaded {len(rows)} total dataset rows from {len(dataset_paths)} dataset(s)")
     if args.rows is not None:
         if args.rows <= 0:
             raise ValueError("--rows must be greater than 0 when provided")
@@ -1001,6 +1043,7 @@ def main() -> None:
             prediction_rows.append(
                 {
                     "id": row_id,
+                    "dataset": row.get("dataset", ""),
                     "topic": row.get("topic", ""),
                     "prompt": prompt,
                     "reference": reference,
@@ -1016,23 +1059,12 @@ def main() -> None:
             print_api_error(error)
             print(f"[row {index}/{len(rows)}] failed with API error")
             prediction_rows.append(
-                {
-                    "id": row_id,
-                    "topic": row.get("topic", ""),
-                    "prompt": prompt,
-                    "reference": reference,
-                    "prediction": "",
-                    "eval_criteria": eval_criteria,
-                    "code_grader": code_grader_spec,
-                    "metrics": {
-                        "exact_match": 0.0,
-                        "token_f1": 0.0,
-                        "criteria_score": 0.0,
-                        "overall_score": 0.0,
-                        "grade": "F",
-                    },
-                    "error": str(error),
-                }
+                build_failed_prediction_row(
+                    row,
+                    eval_criteria=eval_criteria,
+                    code_grader_spec=code_grader_spec,
+                    error=error,
+                )
             )
             if args.fail_fast:
                 raise
@@ -1040,23 +1072,12 @@ def main() -> None:
             error_count += 1
             print(f"[row {index}/{len(rows)}] failed with error: {error}")
             prediction_rows.append(
-                {
-                    "id": row_id,
-                    "topic": row.get("topic", ""),
-                    "prompt": prompt,
-                    "reference": reference,
-                    "prediction": "",
-                    "eval_criteria": eval_criteria,
-                    "code_grader": code_grader_spec,
-                    "metrics": {
-                        "exact_match": 0.0,
-                        "token_f1": 0.0,
-                        "criteria_score": 0.0,
-                        "overall_score": 0.0,
-                        "grade": "F",
-                    },
-                    "error": str(error),
-                }
+                build_failed_prediction_row(
+                    row,
+                    eval_criteria=eval_criteria,
+                    code_grader_spec=code_grader_spec,
+                    error=error,
+                )
             )
             if args.fail_fast:
                 raise
@@ -1070,7 +1091,7 @@ def main() -> None:
 
     report = {
         "run_name": run_name,
-        "dataset": str(Path(args.dataset)),
+        "datasets": [str(Path(path)) for path in dataset_paths],
         "rows_evaluated": len(prediction_rows),
         "errors": error_count,
         "mode": mode,

@@ -1,0 +1,36 @@
+{
+  "run_name": "workflow-run-20261115",
+  "datasets": [
+    "data/datasets/dataset_class_smoke.jsonl"
+  ],
+  "rows_evaluated": 2,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "grader": {
+    "method": "lexical",
+    "model": null
+  },
+  "started_at": "2026-11-15T22:59:26.371344+00:00",
+  "finished_at": "2026-11-15T22:59:26.371837+00:00",
+  "overall_score": 17.2314483918436,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.24616354845490854,
+    "avg_criteria_score": 0.0,
+    "avg_overall_score": 17.2314483918436,
+    "avg_reference_tokens": 24.5,
+    "avg_prediction_tokens": 44.5
+  },
+  "prompting": {
+    "template": "Short answer for: {question}",
+    "extra_context_enabled": false
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/workflow-run-20261115/predictions.jsonl",
+    "report": "data/eval_runs/workflow-run-20261115/report.json",
+    "html_report": "data/eval_runs/workflow-run-20261115/report.html"
+  }
+}

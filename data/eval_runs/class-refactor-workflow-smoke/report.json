@@ -1,0 +1,39 @@
+{
+  "run_name": "class-refactor-workflow-smoke",
+  "datasets": [
+    "data/datasets/dataset_class_smoke.jsonl"
+  ],
+  "rows_evaluated": 3,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "grader": {
+    "method": "lexical",
+    "model": null
+  },
+  "started_at": "2026-11-15T22:49:38.170171+00:00",
+  "finished_at": "2026-11-15T22:49:38.170871+00:00",
+  "overall_score": 17.574588782968195,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.25106555404240277,
+    "avg_criteria_score": 0.0,
+    "avg_overall_score": 17.574588782968195,
+    "avg_reference_tokens": 24.333333333333332,
+    "avg_prediction_tokens": 44.666666666666664
+  },
+  "extra_prompt": {
+    "enabled": false,
+    "file": null
+  },
+  "prompt_draft": {
+    "custom_template": true
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/class-refactor-workflow-smoke/predictions.jsonl",
+    "report": "data/eval_runs/class-refactor-workflow-smoke/report.json",
+    "html_report": "data/eval_runs/class-refactor-workflow-smoke/report.html"
+  }
+}

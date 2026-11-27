@@ -38,38 +38,69 @@ Create a synthetic prompt/answer dataset in `jsonl` (default):
 python -m src.dataset --rows 200 --output data/datasets/synthetic_dataset.jsonl
 ```
 
-Create CSV instead:
+For reusable prompting and grading orchestration, use the class-based workflow in `src.workflow` / `src.workflow_classes`.
+
+## RAG Pipeline (Upload -> Chunk -> Embed -> Vector DB -> Retrieve -> Answer -> Eval)
+
+Use `src.rag` when you want retrieval-augmented generation over uploaded local documents.
+
+What it does:
+- Upload/ingest one or more documents with `--document`
+- Chunk documents (word-based sliding window)
+- Print each chunk preview to console for visibility
+- Embed chunks with `sentence-transformers` (default: `all-MiniLM-L6-v2`)
+- Upsert vectors into persistent `ChromaDB`
+- Retrieve top-k chunks for each question
+- Generate an answer grounded in retrieved context (API mode) or deterministic demo answer (demo mode)
+- Optionally run a RAG eval dataset and write run artifacts
+
+Quick start:
 
 ```bash
-python -m src.dataset --rows 200 --format csv --output data/datasets/synthetic_dataset.csv
+# Ingest and index one document
+python -m src.rag \
+	--document data/context/athlete_context.xml \
+	--collection-name rag_chunks \
+	--mode demo
+
+# Ask a question with retrieval
+python -m src.rag \
+	--question "What are the key athlete goals in the uploaded context?" \
+	--collection-name rag_chunks \
+	--mode demo
+
+# Ingest + ask in one run
+python -m src.rag \
+	--document data/context/athlete_context.xml \
+	--question "Summarize the athlete profile" \
+	--embedding-model sentence-transformers/all-MiniLM-L6-v2 \
+	--collection-name rag_chunks \
+	--chunk-size 220 \
+	--chunk-overlap 40 \
+	--top-k 4 \
+	--mode auto
 ```
 
-For more specific generated outputs, provide an ideal output example when using `src.evaluator`:
+RAG eval:
 
-```python
-from src.evaluator import evaluator
-
-dataset = evaluator.generate_dataset(
-	prompt_inputs_spec={
-		"height": "Athlete's height in cm",
-		"weight": "Athlete's weight in kg",
-		"goal": "Goal of the athlete",
-		"restrictions": "Dietary restrictions of the athlete",
-	},
-	output_file="data/dataset_with_ideal.json",
-	num_cases=3,
-	ideal_output="""
-Breakfast: 3 eggs, 2 slices whole-grain toast, 1 cup berries.
-Lunch: 170g grilled chicken, 1 cup rice, 2 cups mixed vegetables.
-Snack: Greek yogurt (200g) + banana.
-Dinner: 180g lean beef, 250g potatoes, salad with olive oil.
-""",
-)
+```bash
+python -m src.rag \
+	--document data/context/athlete_context.xml \
+	--eval-dataset data/datasets/rag_eval_sample.jsonl \
+	--collection-name rag_chunks \
+	--rows 10 \
+	--mode demo
 ```
+
+RAG run artifacts are stored under `data/eval_runs/<run_name>/`:
+- `predictions.jsonl`: per-row prediction + retrieved chunks + lexical metrics
+- `report.json`: aggregate RAG metrics (`avg_overall_score`, `avg_token_f1`, `exact_match_rate`, `avg_retrieved_chunks`)
 
 ## Run Evaluation Pipeline
 
 Evaluate a JSONL dataset (`prompt` + `answer`) and generate per-row predictions + aggregated metrics.
+
+You can pass one or many datasets by repeating `--dataset`.
 
 Optional: include `eval_criteria` in each row to score criteria coverage (`avg_criteria_score`).
 
@@ -83,6 +114,12 @@ Auto mode (uses API if `ANTHROPIC_API_KEY` exists, otherwise demo mode):
 
 ```bash
 python -m src.eval --dataset data/datasets/synthetic_dataset.jsonl --rows 50
+
+# Single feed with multiple datasets
+python -m src.eval \
+	--dataset data/datasets/synthetic_dataset.jsonl \
+	--dataset data/datasets/workflow_dataset.jsonl \
+	--dataset data/datasets/code_eval_sample.jsonl
 ```
 
 Force Anthropic API mode:
@@ -178,10 +215,29 @@ Notes:
 
 ## One-Command Workflow (Dataset + Eval)
 
-Run end-to-end workflow with grader integrated:
+Run end-to-end workflow (class-based and reusable) with grader integrated:
 
 ```bash
 python -m src.workflow --mode demo --grader lexical --rows 25
+```
+
+Use a custom reusable prompt template (supports `{question}`, `{prompt}`, `{extra_context}`):
+
+```bash
+python -m src.workflow \
+	--mode demo \
+	--dataset data/datasets/dataset_class_smoke.jsonl \
+	--prompt-template "Short answer for: {question}"
+```
+
+Pass multiple datasets into one workflow feed:
+
+```bash
+python -m src.workflow \
+	--mode demo \
+	--dataset data/datasets/synthetic_dataset.jsonl \
+	--dataset data/datasets/code_eval_sample.jsonl \
+	--eval-rows 20
 ```
 
 Use model grader in API mode:
@@ -199,4 +255,9 @@ Workflow defaults:
 
 - Creates `data/datasets/workflow_dataset.jsonl` if missing
 - Reuses existing dataset unless `--regenerate-dataset` is set
-- Forwards all grader options directly into `src.eval`
+- Uses reusable classes in `src/workflow_classes.py`:
+	- `PromptDraft` for prompt templating
+	- `EvalDataset` for dataset loading/generation
+	- `ClaudeRunner` for prediction
+	- `EvalGrader` for scoring
+	- `WorkflowRunner` for orchestration and artifact writing

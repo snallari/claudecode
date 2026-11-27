@@ -1,0 +1,36 @@
+{
+  "run_name": "cleanup-check-20261115",
+  "datasets": [
+    "data/datasets/dataset_class_smoke.jsonl"
+  ],
+  "rows_evaluated": 1,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "grader": {
+    "method": "lexical",
+    "model": null
+  },
+  "started_at": "2026-11-15T23:03:10.251593+00:00",
+  "finished_at": "2026-11-15T23:03:10.252093+00:00",
+  "overall_score": 13.658536585365852,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.1951219512195122,
+    "avg_criteria_score": 0.0,
+    "avg_overall_score": 13.658536585365852,
+    "avg_reference_tokens": 23.0,
+    "avg_prediction_tokens": 59.0
+  },
+  "prompting": {
+    "template": null,
+    "extra_context_enabled": false
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/cleanup-check-20261115/predictions.jsonl",
+    "report": "data/eval_runs/cleanup-check-20261115/report.json",
+    "html_report": "data/eval_runs/cleanup-check-20261115/report.html"
+  }
+}

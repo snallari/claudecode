@@ -1,0 +1,39 @@
+{
+  "run_name": "class-refactor-eval-smoke",
+  "datasets": [
+    "data/datasets/dataset_class_smoke.jsonl"
+  ],
+  "rows_evaluated": 2,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "grader": {
+    "method": "lexical",
+    "model": null
+  },
+  "started_at": "2026-11-15T22:49:36.649900+00:00",
+  "finished_at": "2026-11-15T22:49:36.650704+00:00",
+  "overall_score": 16.746079015286874,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.23922970021838394,
+    "avg_criteria_score": 0.0,
+    "avg_overall_score": 16.746079015286874,
+    "avg_reference_tokens": 24.5,
+    "avg_prediction_tokens": 46.5
+  },
+  "extra_prompt": {
+    "enabled": false,
+    "file": null
+  },
+  "prompt_draft": {
+    "custom_template": true
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/class-refactor-eval-smoke/predictions.jsonl",
+    "report": "data/eval_runs/class-refactor-eval-smoke/report.json",
+    "html_report": "data/eval_runs/class-refactor-eval-smoke/report.html"
+  }
+}

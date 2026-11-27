@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import random
 from pathlib import Path
@@ -88,23 +87,9 @@ def write_jsonl(rows: list[dict[str, str]], output_path: Path) -> None:
             file.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
-def write_csv(rows: list[dict[str, str]], output_path: Path) -> None:
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=["id", "role", "company", "location", "hours_ago", "prompt", "answer"])
-        writer.writeheader()
-        writer.writerows(rows)
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate a synthetic full-stack job-posting dataset for the last 24 hours.")
     parser.add_argument("--rows", type=int, default=100, help="Number of rows to generate")
-    parser.add_argument(
-        "--format",
-        choices=["jsonl", "csv"],
-        default="jsonl",
-        help="Output dataset format",
-    )
     parser.add_argument(
         "--output",
         default="data/datasets/job_postings_last_24h.jsonl",
@@ -120,10 +105,7 @@ def main() -> None:
     rows = generate_dataset(rows=args.rows, seed=args.seed)
     output_path = Path(args.output)
 
-    if args.format == "csv":
-        write_csv(rows, output_path)
-    else:
-        write_jsonl(rows, output_path)
+    write_jsonl(rows, output_path)
 
     print(f"Generated {len(rows)} job-posting rows at {output_path}")
 

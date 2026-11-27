@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any, Iterable, Optional, Tuple
 
 import anthropic
-from src.tools import get_current_datetime_schema
 
 
 def chat(
@@ -17,7 +16,6 @@ def chat(
         "model": model,
         "max_tokens": max_tokens,
         "messages": list(messages),
-        "tools": [get_current_datetime_schema],
     }
 
     if stream:
