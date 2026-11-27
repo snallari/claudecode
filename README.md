@@ -46,12 +46,14 @@ Use `src.rag` when you want retrieval-augmented generation over uploaded local d
 
 What it does:
 - Upload/ingest one or more documents with `--document`
+- Supports structured spreadsheet ingestion for `.xlsx/.xls/.xlsm`
 - Chunk documents (word-based sliding window)
 - Print each chunk preview to console for visibility
 - Embed chunks with `sentence-transformers` (default: `all-MiniLM-L6-v2`)
 - Upsert vectors into persistent `ChromaDB`
 - Retrieve top-k chunks for each question
 - Generate an answer grounded in retrieved context (API mode) or deterministic demo answer (demo mode)
+- Optionally generate a Markdown spec document from retrieved context
 - Optionally run a RAG eval dataset and write run artifacts
 
 Quick start:
@@ -79,6 +81,15 @@ python -m src.rag \
 	--chunk-overlap 40 \
 	--top-k 4 \
 	--mode auto
+
+# Ingest Excel and generate specification markdown
+python -m src.rag \
+	--document data/context/requirements.xlsx \
+	--collection-name rag_chunks \
+	--mode demo \
+	--generate-spec-doc \
+	--implementation-target backend \
+	--spec-doc-path data/spec_docs/requirements_spec.md
 ```
 
 RAG eval:
@@ -112,6 +123,18 @@ python -m src.rag \
 RAG run artifacts are stored under `data/eval_runs/<run_name>/`:
 - `predictions.jsonl`: per-row prediction + retrieved chunks + lexical metrics
 - `report.json`: aggregate RAG metrics (`avg_overall_score`, `avg_token_f1`, `exact_match_rate`, `avg_retrieved_chunks`)
+
+Spec generation options:
+- `--generate-spec-doc`
+- `--spec-doc-path <path>`
+- `--spec-query "..."`
+- `--implementation-target backend|frontend|fullstack`
+- `--max-spec-chunks <int>`
+
+Standards behavior:
+- `backend`: spec is guided by .NET backend coding standards
+- `frontend`: spec is guided by React frontend standards
+- `fullstack`: includes both backend and frontend standards
 
 ## Run Evaluation Pipeline
 
@@ -267,6 +290,27 @@ python -m src.workflow \
 	--grader-model claude-3-5-sonnet-latest \
 	--rows 50
 ```
+
+Run workflow with RAG document ingest + spec generation:
+
+```bash
+python -m src.workflow \
+	--mode demo \
+	--rag-document data/context/sample_requirements.xlsx \
+	--rag-collection-name rag_chunks_workflow \
+	--generate-spec-doc \
+	--implementation-target backend \
+	--spec-doc-path data/spec_docs/workflow_requirements_spec.md \
+	--spec-query "Create a complete product and technical specification" \
+	--max-spec-chunks 10
+```
+
+Workflow RAG options:
+- `--rag-document` (repeatable)
+- `--rag-chunk-size`, `--rag-chunk-overlap`
+- `--rag-embedding-model`
+- `--rag-vector-db-path`, `--rag-collection-name`
+- `--generate-spec-doc`, `--spec-doc-path`, `--spec-query`, `--max-spec-chunks`
 
 Workflow defaults:
 

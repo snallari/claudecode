@@ -1,0 +1,36 @@
+{
+  "run_name": "20261127T025734Z",
+  "datasets": [
+    "data/datasets/workflow_dataset.jsonl"
+  ],
+  "rows_evaluated": 2,
+  "errors": 0,
+  "mode": "demo",
+  "requested_mode": "demo",
+  "model": "demo-local",
+  "grader": {
+    "method": "lexical",
+    "model": null
+  },
+  "started_at": "2026-11-27T02:57:34.370325+00:00",
+  "finished_at": "2026-11-27T02:57:34.370646+00:00",
+  "overall_score": 14.154849688031762,
+  "overall_grade": "F",
+  "metrics": {
+    "exact_match_rate": 0.0,
+    "avg_token_f1": 0.20221213840045377,
+    "avg_criteria_score": 0.0,
+    "avg_overall_score": 14.154849688031762,
+    "avg_reference_tokens": 24.5,
+    "avg_prediction_tokens": 59.5
+  },
+  "prompting": {
+    "template": null,
+    "extra_context_enabled": false
+  },
+  "artifacts": {
+    "predictions": "data/eval_runs/20261127T025734Z/predictions.jsonl",
+    "report": "data/eval_runs/20261127T025734Z/report.json",
+    "html_report": "data/eval_runs/20261127T025734Z/report.html"
+  }
+}

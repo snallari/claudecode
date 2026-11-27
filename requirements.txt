@@ -2,3 +2,5 @@ anthropic
 python-dotenv
 chromadb
 sentence-transformers
+pandas
+openpyxl

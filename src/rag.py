@@ -12,6 +12,7 @@ from typing import Any
 import anthropic
 import chromadb
 from dotenv import load_dotenv
+import pandas as pd
 from sentence_transformers import SentenceTransformer
 
 from src.client import chat, get_text_from_response, print_api_error, resolve_model
@@ -49,6 +50,30 @@ def read_document_text(path: Path) -> str:
         raise FileNotFoundError(f"Document not found: {path}")
 
     suffix = path.suffix.lower()
+
+    if suffix in {".xlsx", ".xls", ".xlsm"}:
+        workbook = pd.ExcelFile(path)
+        sheet_blocks: list[str] = []
+        for sheet_name in workbook.sheet_names:
+            dataframe = pd.read_excel(workbook, sheet_name=sheet_name, dtype=str).fillna("")
+            sheet_blocks.append(f"# Sheet: {sheet_name}")
+            columns = [str(column).strip() for column in dataframe.columns]
+            if columns:
+                sheet_blocks.append("Columns: " + ", ".join(columns))
+
+            for index, row in dataframe.iterrows():
+                values: list[str] = []
+                for column in dataframe.columns:
+                    key = str(column).strip()
+                    value = str(row[column]).strip()
+                    if key and value:
+                        values.append(f"{key}: {value}")
+
+                if values:
+                    sheet_blocks.append(f"- Row {index + 2}: " + " | ".join(values))
+
+        return "\n".join(sheet_blocks).strip()
+
     raw = path.read_text(encoding="utf-8", errors="ignore")
 
     if suffix == ".json":
@@ -337,6 +362,134 @@ class RagPipeline:
             "answer": answer,
         }
 
+    def standards_guidance(self, implementation_target: str) -> str:
+        normalized_target = implementation_target.strip().lower()
+        if normalized_target == "backend":
+            return (
+                "Implement backend specifications using .NET coding standards:\n"
+                "- Use clear layered architecture (API, application, domain, infrastructure).\n"
+                "- Follow SOLID principles and dependency injection patterns.\n"
+                "- Use PascalCase for public types/methods and camelCase for local variables/parameters.\n"
+                "- Use async/await for I/O-bound operations and cancellation tokens where relevant.\n"
+                "- Include validation, structured logging, exception handling, and testability guidance."
+            )
+        if normalized_target == "frontend":
+            return (
+                "Implement frontend specifications using React standards:\n"
+                "- Prefer functional components and hooks, with clear component boundaries.\n"
+                "- Use predictable state management and unidirectional data flow.\n"
+                "- Enforce accessibility (semantic HTML, aria where needed, keyboard navigation).\n"
+                "- Organize reusable UI components, API layer separation, and error/loading states.\n"
+                "- Include testing guidance for components and user flows."
+            )
+        return (
+            "Implementation target is fullstack. Include both .NET backend standards and React frontend standards "
+            "in relevant sections."
+        )
+
+    def build_spec_prompt(
+        self,
+        retrieved_contexts: list[dict[str, Any]],
+        spec_query: str,
+        implementation_target: str,
+    ) -> str:
+        context_lines: list[str] = []
+        for index, context in enumerate(retrieved_contexts, start=1):
+            context_lines.append(
+                f"[{index}] source={context.get('source', '')} chunk={context.get('chunk_id', '')}\n"
+                f"{context.get('text', '')}"
+            )
+
+        context_block = "\n\n".join(context_lines) if context_lines else "No retrieved context was found."
+        standards_section = self.standards_guidance(implementation_target)
+        return (
+            "You are a senior product and solutions architect.\n"
+            "Use only the retrieved context to draft a specification document in Markdown.\n"
+            "If information is missing, explicitly call it out in Open Questions.\n\n"
+            "Required sections:\n"
+            "1. Title\n"
+            "2. Objective\n"
+            "3. Scope (in / out)\n"
+            "4. Assumptions\n"
+            "5. Functional Requirements\n"
+            "6. Data Dictionary (infer fields from spreadsheet context when available)\n"
+            "7. Business Rules\n"
+            "8. Non-Functional Requirements\n"
+            "9. API / Integration Notes\n"
+            "10. Validation & Acceptance Criteria\n"
+            "11. Open Questions / Risks\n\n"
+            f"Implementation target: {implementation_target}\n"
+            f"Standards requirements:\n{standards_section}\n\n"
+            f"Spec objective:\n{spec_query}\n\n"
+            f"Retrieved context:\n{context_block}\n"
+        )
+
+    def build_demo_spec_doc(
+        self,
+        retrieved_contexts: list[dict[str, Any]],
+        spec_query: str,
+        implementation_target: str,
+    ) -> str:
+        context_preview_lines: list[str] = []
+        for context in retrieved_contexts[:8]:
+            preview = str(context.get("text", "")).strip()
+            if preview:
+                context_preview_lines.append(f"- {preview[:200]}")
+
+        context_preview = "\n".join(context_preview_lines) if context_preview_lines else "- No context available"
+        standards_section = self.standards_guidance(implementation_target)
+        return (
+            "# Specification Document (Draft)\n\n"
+            f"## Objective\n{spec_query}\n\n"
+            f"## Implementation Target\n{implementation_target}\n\n"
+            f"## Standards Requirements\n{standards_section}\n\n"
+            "## Scope\n"
+            "- In scope: ingest documents, chunk content, embed chunks, retrieve context, generate grounded outputs.\n"
+            "- Out of scope: unsupported source parsing beyond configured file readers.\n\n"
+            "## Functional Requirements\n"
+            "- System shall parse uploaded documents into normalized text blocks.\n"
+            "- System shall create overlapping text chunks for retrieval.\n"
+            "- System shall store chunk embeddings in vector storage.\n"
+            "- System shall generate responses and artifacts grounded in retrieved chunks.\n\n"
+            "## Data Dictionary\n"
+            "- Derive entities and fields from uploaded source columns/content.\n\n"
+            "## Validation & Acceptance Criteria\n"
+            "- Chunk previews are printed to console after upload.\n"
+            "- Retrieval returns relevant chunks for the spec query.\n"
+            "- Generated spec doc is written to the target output path.\n\n"
+            "## Open Questions / Risks\n"
+            "- Confirm required output format and level of detail for downstream consumers.\n"
+            "- Validate whether additional metadata fields are needed for traceability.\n\n"
+            "## Retrieved Context Preview\n"
+            f"{context_preview}\n"
+        )
+
+    def generate_spec_doc(self, spec_query: str, max_spec_chunks: int, implementation_target: str) -> dict[str, Any]:
+        query_vector = self.embedder.embed_query(spec_query)
+        retrieved_contexts = self.vector_db.search(query_vector, top_k=max_spec_chunks)
+
+        if self.active_mode == "demo":
+            spec_markdown = self.build_demo_spec_doc(retrieved_contexts, spec_query, implementation_target)
+        else:
+            if self.client is None:
+                raise RuntimeError("Anthropic client not initialized.")
+            prompt = self.build_spec_prompt(retrieved_contexts, spec_query, implementation_target)
+            response = chat(
+                client=self.client,
+                messages=[{"role": "user", "content": prompt}],
+                model=self.active_model,
+                max_tokens=self.config.max_tokens,
+                stream=False,
+            )
+            spec_markdown = get_text_from_response(response).strip()
+
+        return {
+            "spec_query": spec_query,
+            "implementation_target": implementation_target,
+            "retrieved_contexts": retrieved_contexts,
+            "spec_markdown": spec_markdown,
+        }
+
     def run_eval(
         self,
         *,
@@ -538,6 +691,33 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", default="data/eval_runs", help="Output directory for eval artifacts")
     parser.add_argument("--run-name", default=None, help="Optional eval run name")
     parser.add_argument("--rows", type=int, default=None, help="Optional max rows for eval")
+    parser.add_argument(
+        "--generate-spec-doc",
+        action="store_true",
+        help="Generate a Markdown specification document from retrieved context.",
+    )
+    parser.add_argument(
+        "--spec-doc-path",
+        default="data/spec_docs/generated_spec.md",
+        help="Output path for generated spec markdown.",
+    )
+    parser.add_argument(
+        "--spec-query",
+        default="Generate a complete product and technical specification from the uploaded source documents.",
+        help="Query objective used to retrieve context for spec generation.",
+    )
+    parser.add_argument(
+        "--implementation-target",
+        choices=["backend", "frontend", "fullstack"],
+        default="fullstack",
+        help="Standards target for spec output (backend=.NET, frontend=React, fullstack=both).",
+    )
+    parser.add_argument(
+        "--max-spec-chunks",
+        type=int,
+        default=20,
+        help="Maximum retrieved chunks used as context for spec generation.",
+    )
     return parser.parse_args()
 
 
@@ -613,8 +793,27 @@ def main() -> None:
             print_api_error(error)
             raise SystemExit(1) from error
 
-    if not args.question and not args.eval_dataset:
-        print("\nNothing to answer/evaluate yet. Use --question and/or --eval-dataset.")
+    if args.generate_spec_doc:
+        if args.max_spec_chunks <= 0:
+            raise ValueError("--max-spec-chunks must be greater than 0")
+        print("\n[spec] generating specification document")
+        try:
+            spec_result = pipeline.generate_spec_doc(
+                spec_query=args.spec_query,
+                max_spec_chunks=args.max_spec_chunks,
+                implementation_target=args.implementation_target,
+            )
+            spec_doc_path = normalize_path(args.spec_doc_path)
+            spec_doc_path.parent.mkdir(parents=True, exist_ok=True)
+            spec_doc_path.write_text(str(spec_result["spec_markdown"]), encoding="utf-8")
+            print(f"[spec] retrieved contexts: {len(spec_result['retrieved_contexts'])}")
+            print(f"[spec] wrote markdown: {spec_doc_path}")
+        except anthropic.APIError as error:
+            print_api_error(error)
+            raise SystemExit(1) from error
+
+    if not args.question and not args.eval_dataset and not args.generate_spec_doc:
+        print("\nNothing to answer/evaluate yet. Use --question, --eval-dataset, and/or --generate-spec-doc.")
 
 
 if __name__ == "__main__":
