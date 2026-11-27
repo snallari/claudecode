@@ -1,0 +1,20 @@
+{
+  "run_name": "rag-20261127T024025Z",
+  "dataset": "/Users/sairam/Documents/sai-ai/anthropic/data/datasets/rag_eval_sample.jsonl",
+  "mode": "demo",
+  "model": "demo-local",
+  "grader": "lexical",
+  "grader_model": null,
+  "rows_evaluated": 2,
+  "errors": 0,
+  "metrics": {
+    "avg_overall_score": 7.467994310099574,
+    "avg_token_f1": 0.10668563300142248,
+    "exact_match_rate": 0.0,
+    "avg_retrieved_chunks": 1.0
+  },
+  "vector_db_path": "/Users/sairam/Documents/sai-ai/anthropic/data/vector_db/chroma",
+  "vector_db_collection": "rag_chunks_lib",
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "generated_at": "2026-11-27T02:40:25.138299+00:00"
+}

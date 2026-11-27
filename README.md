@@ -88,8 +88,25 @@ python -m src.rag \
 	--document data/context/athlete_context.xml \
 	--eval-dataset data/datasets/rag_eval_sample.jsonl \
 	--collection-name rag_chunks \
+	--grader lexical \
 	--rows 10 \
 	--mode demo
+```
+
+RAG eval reuses the existing grader implementation from `src.eval`:
+- `--grader lexical|model|code|coding`
+- `--grader-model`, `--grader-fallback-model`, `--grader-max-tokens`
+- `--code-timeout-seconds`
+
+Example model grader run:
+
+```bash
+python -m src.rag \
+	--eval-dataset data/datasets/rag_eval_sample.jsonl \
+	--mode api \
+	--grader model \
+	--model claude-3-5-sonnet-latest \
+	--grader-model claude-3-5-sonnet-latest
 ```
 
 RAG run artifacts are stored under `data/eval_runs/<run_name>/`:

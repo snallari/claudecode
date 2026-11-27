@@ -15,7 +15,19 @@ from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 
 from src.client import chat, get_text_from_response, print_api_error, resolve_model
-from src.eval import exact_match, load_jsonl_dataset, overall_score, score_grade, token_f1, write_json, write_jsonl
+from src.eval import (
+    code_grader_result,
+    criteria_score,
+    exact_match,
+    load_jsonl_dataset,
+    model_grader_result,
+    normalize_grader_method,
+    overall_score,
+    score_grade,
+    token_f1,
+    write_json,
+    write_jsonl,
+)
 
 DEFAULT_MODEL = "claude-3-5-sonnet-latest"
 
@@ -172,6 +184,11 @@ class RagConfig:
     max_tokens: int
     top_k: int
     embedding_model: str
+    grader: str
+    grader_model: str | None
+    grader_fallback_model: str | None
+    grader_max_tokens: int
+    code_timeout_seconds: float
 
 
 class RagPipeline:
@@ -182,6 +199,8 @@ class RagPipeline:
         self.client: anthropic.Anthropic | None = None
         self.active_mode = "demo"
         self.active_model = "demo-local"
+        self.active_grader_method = "lexical"
+        self.active_grader_model: str | None = None
 
     def setup(self) -> None:
         requested_mode = self.config.mode
@@ -203,6 +222,22 @@ class RagPipeline:
                 print(note)
         else:
             self.active_model = "demo-local"
+
+        self.active_grader_method = normalize_grader_method(self.config.grader)
+        if self.active_grader_method == "model":
+            if self.active_mode != "api" or self.client is None:
+                raise RuntimeError("--grader model requires API mode.")
+            requested_grader_model = self.config.grader_model or self.active_model
+            self.active_grader_model, note = resolve_model(
+                self.client,
+                requested_grader_model,
+                self.config.grader_fallback_model,
+            )
+            if note:
+                print(f"Grader: {note}")
+
+        if self.active_grader_method == "code" and self.config.code_timeout_seconds <= 0:
+            raise ValueError("--code-timeout-seconds must be greater than 0")
 
     def ingest_document(self, document_path: Path, *, chunk_size: int, chunk_overlap: int, show_chunks: bool = True) -> int:
         source = str(document_path)
@@ -323,6 +358,8 @@ class RagPipeline:
             row_id = str(row.get("id", index))
             question = str(row.get("prompt", "")).strip()
             reference = str(row.get("answer", "")).strip()
+            eval_criteria = [str(item) for item in row.get("eval_criteria", [])]
+            code_grader_spec = row.get("code_grader")
             print(f"[eval {index}/{len(rows)}] id={row_id}")
 
             try:
@@ -331,14 +368,58 @@ class RagPipeline:
                 metrics = {
                     "exact_match": exact_match(reference, prediction),
                     "token_f1": token_f1(reference, prediction),
+                    "criteria_score": criteria_score(eval_criteria, prediction),
                 }
+                criteria_value: float | None = metrics["criteria_score"] if eval_criteria else None
                 metrics["overall_score"] = overall_score(
                     metrics["exact_match"],
                     metrics["token_f1"],
-                    None,
+                    criteria_value,
                 )
                 metrics["grade"] = score_grade(metrics["overall_score"])
                 metrics["retrieved_chunks"] = len(result["contexts"])
+                metrics["grading_details"] = {"method": self.active_grader_method}
+
+                if self.active_grader_method == "model":
+                    if self.client is None or not self.active_grader_model:
+                        raise RuntimeError("Model grader is not configured.")
+                    grader_output = model_grader_result(
+                        client=self.client,
+                        grader_model=self.active_grader_model,
+                        max_tokens=self.config.grader_max_tokens,
+                        prompt=question,
+                        reference=reference,
+                        prediction=prediction,
+                        criteria=eval_criteria,
+                    )
+                    metrics["overall_score"] = grader_output["score"]
+                    metrics["grade"] = grader_output["grade"]
+                    metrics["grading_details"] = {
+                        "method": "model",
+                        "model": self.active_grader_model,
+                        "model_rationale": grader_output["rationale"],
+                        "raw_response": grader_output["raw_response"],
+                    }
+                elif self.active_grader_method == "code":
+                    if code_grader_spec:
+                        timeout_seconds = float(code_grader_spec.get("timeout_seconds", self.config.code_timeout_seconds))
+                        grader_output = code_grader_result(
+                            prediction=prediction,
+                            code_spec=code_grader_spec,
+                            timeout_seconds=timeout_seconds,
+                        )
+                        metrics["overall_score"] = grader_output["score"]
+                        metrics["grade"] = grader_output["grade"]
+                        metrics["grading_details"] = {
+                            "method": "code",
+                            "rationale": grader_output["rationale"],
+                            "details": grader_output["details"],
+                        }
+                    else:
+                        metrics["grading_details"] = {
+                            "method": "code",
+                            "rationale": "No code_grader spec provided for this row; using lexical metrics only.",
+                        }
 
                 prediction_rows.append(
                     {
@@ -347,6 +428,8 @@ class RagPipeline:
                         "prompt": question,
                         "reference": reference,
                         "prediction": prediction,
+                        "eval_criteria": eval_criteria,
+                        "code_grader": code_grader_spec,
                         "retrieved_contexts": result["contexts"],
                         "metrics": metrics,
                     }
@@ -376,6 +459,8 @@ class RagPipeline:
             "dataset": str(dataset_path),
             "mode": self.active_mode,
             "model": self.active_model,
+            "grader": self.active_grader_method,
+            "grader_model": self.active_grader_model,
             "rows_evaluated": count,
             "errors": errors,
             "metrics": {
@@ -421,6 +506,34 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", default=os.getenv("ANTHROPIC_MODEL", DEFAULT_MODEL), help="Model name")
     parser.add_argument("--fallback-model", default=os.getenv("ANTHROPIC_FALLBACK_MODEL"), help="Fallback model")
     parser.add_argument("--max-tokens", type=int, default=350, help="Max tokens for answer generation")
+    parser.add_argument(
+        "--grader",
+        choices=["lexical", "model", "code", "coding"],
+        default=os.getenv("EVAL_GRADER", "lexical"),
+        help="Grading strategy: lexical (default), model, code, or coding",
+    )
+    parser.add_argument(
+        "--grader-model",
+        default=os.getenv("ANTHROPIC_GRADER_MODEL"),
+        help="Model used for grading when --grader model (defaults to --model)",
+    )
+    parser.add_argument(
+        "--grader-fallback-model",
+        default=os.getenv("ANTHROPIC_GRADER_FALLBACK_MODEL"),
+        help="Fallback model for grader model resolution",
+    )
+    parser.add_argument(
+        "--grader-max-tokens",
+        type=int,
+        default=300,
+        help="Max tokens for grader model responses",
+    )
+    parser.add_argument(
+        "--code-timeout-seconds",
+        type=float,
+        default=3.0,
+        help="Timeout in seconds for executing generated code per row when --grader code",
+    )
     parser.add_argument("--eval-dataset", default=None, help="Optional JSONL dataset for RAG evaluation")
     parser.add_argument("--output-dir", default="data/eval_runs", help="Output directory for eval artifacts")
     parser.add_argument("--run-name", default=None, help="Optional eval run name")
@@ -447,6 +560,11 @@ def main() -> None:
         max_tokens=args.max_tokens,
         top_k=args.top_k,
         embedding_model=args.embedding_model,
+        grader=args.grader,
+        grader_model=args.grader_model,
+        grader_fallback_model=args.grader_fallback_model,
+        grader_max_tokens=args.grader_max_tokens,
+        code_timeout_seconds=args.code_timeout_seconds,
     )
 
     pipeline = RagPipeline(
