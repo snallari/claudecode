@@ -205,6 +205,18 @@ def parse_code_grader_spec(raw_spec: Any) -> dict[str, Any] | None:
     return result
 
 
+def parse_chunk_id_list(raw_value: Any) -> list[str]:
+    if raw_value is None:
+        return []
+    if isinstance(raw_value, str):
+        candidates = [part.strip() for part in raw_value.split(",")]
+    elif isinstance(raw_value, list):
+        candidates = [str(item).strip() for item in raw_value]
+    else:
+        return []
+    return [candidate for candidate in candidates if candidate]
+
+
 def load_jsonl_dataset(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         raise FileNotFoundError(f"Dataset not found: {path}")
@@ -230,6 +242,8 @@ def load_jsonl_dataset(path: Path) -> list[dict[str, Any]]:
                     "answer": answer,
                     "eval_criteria": parse_criteria(row.get("eval_criteria", row.get("criteria", []))),
                     "code_grader": parse_code_grader_spec(row.get("code_grader")),
+                    "gold_chunk_ids": parse_chunk_id_list(row.get("gold_chunk_ids")),
+                    "required_citations": parse_chunk_id_list(row.get("required_citations")),
                 }
             )
 

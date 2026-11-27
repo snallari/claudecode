@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import collections
 import json
+import math
 import os
 import re
 from dataclasses import dataclass
@@ -200,6 +202,96 @@ class ChromaVectorDB:
             )
         return output
 
+    def get_all_chunks(self) -> list[dict[str, Any]]:
+        if self.collection is None:
+            return []
+
+        results = self.collection.get(include=["documents", "metadatas"])
+        ids = results.get("ids") or []
+        documents = results.get("documents") or []
+        metadatas = results.get("metadatas") or []
+
+        output: list[dict[str, Any]] = []
+        for chunk_id, document, metadata in zip(ids, documents, metadatas):
+            metadata_dict = metadata if isinstance(metadata, dict) else {}
+            output.append(
+                {
+                    "chunk_id": str(metadata_dict.get("chunk_id", chunk_id or "")),
+                    "source": str(metadata_dict.get("source", "")),
+                    "text": str(document or ""),
+                }
+            )
+        return output
+
+
+class BM25KeywordIndex:
+    def __init__(self, *, k1: float = 1.5, b: float = 0.75):
+        self.k1 = k1
+        self.b = b
+        self.records: list[dict[str, Any]] = []
+        self.doc_tokens: list[list[str]] = []
+        self.doc_token_counts: list[dict[str, int]] = []
+        self.idf: dict[str, float] = {}
+        self.avg_doc_len = 0.0
+
+    @staticmethod
+    def tokenize(text: str) -> list[str]:
+        return re.findall(r"\w+", str(text).lower())
+
+    def build(self, records: list[dict[str, Any]]) -> None:
+        self.records = list(records)
+        self.doc_tokens = [self.tokenize(str(record.get("text", ""))) for record in self.records]
+        self.doc_token_counts = [dict(collections.Counter(tokens)) for tokens in self.doc_tokens]
+
+        lengths = [len(tokens) for tokens in self.doc_tokens]
+        self.avg_doc_len = (sum(lengths) / len(lengths)) if lengths else 0.0
+
+        doc_freq: collections.Counter[str] = collections.Counter()
+        for tokens in self.doc_tokens:
+            doc_freq.update(set(tokens))
+
+        total_docs = len(self.records)
+        self.idf = {}
+        for token, freq in doc_freq.items():
+            self.idf[token] = math.log(1.0 + (total_docs - freq + 0.5) / (freq + 0.5))
+
+    def search(self, query: str, top_k: int) -> list[dict[str, Any]]:
+        if top_k <= 0 or not self.records:
+            return []
+
+        query_tokens = self.tokenize(query)
+        if not query_tokens:
+            return []
+
+        scored: list[tuple[float, int]] = []
+        for index, token_counts in enumerate(self.doc_token_counts):
+            doc_len = max(1, len(self.doc_tokens[index]))
+            score = 0.0
+            for token in query_tokens:
+                tf = float(token_counts.get(token, 0))
+                if tf <= 0:
+                    continue
+                idf = self.idf.get(token, 0.0)
+                denominator = tf + self.k1 * (1.0 - self.b + self.b * (doc_len / max(1e-9, self.avg_doc_len or 1.0)))
+                score += idf * ((tf * (self.k1 + 1.0)) / max(1e-9, denominator))
+            if score > 0:
+                scored.append((score, index))
+
+        scored.sort(key=lambda item: item[0], reverse=True)
+        output: list[dict[str, Any]] = []
+        for rank, (score, index) in enumerate(scored[:top_k], start=1):
+            record = self.records[index]
+            output.append(
+                {
+                    "chunk_id": str(record.get("chunk_id", "")),
+                    "source": str(record.get("source", "")),
+                    "text": str(record.get("text", "")),
+                    "bm25_score": float(score),
+                    "bm25_rank": rank,
+                }
+            )
+        return output
+
 
 @dataclass
 class RagConfig:
@@ -214,6 +306,13 @@ class RagConfig:
     grader_fallback_model: str | None
     grader_max_tokens: int
     code_timeout_seconds: float
+    retrieval_mode: str
+    dense_k: int
+    sparse_k: int
+    rrf_k: int
+    rerank_enabled: bool
+    rerank_candidates: int
+    final_context_k: int
 
 
 class RagPipeline:
@@ -226,6 +325,49 @@ class RagPipeline:
         self.active_model = "demo-local"
         self.active_grader_method = "lexical"
         self.active_grader_model: str | None = None
+        self.keyword_index = BM25KeywordIndex()
+        self.keyword_index_dirty = True
+
+    @staticmethod
+    def _tokenize(text: str) -> list[str]:
+        return BM25KeywordIndex.tokenize(text)
+
+    @staticmethod
+    def _token_overlap_ratio(a_text: str, b_text: str) -> float:
+        a_tokens = set(BM25KeywordIndex.tokenize(a_text))
+        b_tokens = set(BM25KeywordIndex.tokenize(b_text))
+        if not a_tokens:
+            return 0.0
+        return len(a_tokens & b_tokens) / len(a_tokens)
+
+    @staticmethod
+    def _extract_citation_ids(answer: str) -> list[str]:
+        matches = re.findall(r"\[([^\]]+)\]", str(answer))
+        ids: list[str] = []
+        for raw in matches:
+            candidate = str(raw).strip()
+            if not candidate:
+                continue
+            parts = [part.strip() for part in candidate.split(",") if part.strip()]
+            ids.extend(parts)
+        return ids
+
+    def _ensure_keyword_index(self) -> None:
+        if not self.keyword_index_dirty:
+            return
+        records = self.vector_db.get_all_chunks()
+        self.keyword_index.build(records)
+        self.keyword_index_dirty = False
+
+    @staticmethod
+    def _normalize_scores(values: list[float]) -> list[float]:
+        if not values:
+            return []
+        min_value = min(values)
+        max_value = max(values)
+        if max_value <= min_value:
+            return [1.0 if max_value > 0 else 0.0 for _ in values]
+        return [(value - min_value) / (max_value - min_value) for value in values]
 
     def setup(self) -> None:
         requested_mode = self.config.mode
@@ -263,6 +405,18 @@ class RagPipeline:
 
         if self.active_grader_method == "code" and self.config.code_timeout_seconds <= 0:
             raise ValueError("--code-timeout-seconds must be greater than 0")
+        if self.config.retrieval_mode not in {"dense", "sparse", "hybrid"}:
+            raise ValueError("--retrieval-mode must be one of dense, sparse, hybrid")
+        if self.config.dense_k <= 0:
+            raise ValueError("--dense-k must be greater than 0")
+        if self.config.sparse_k <= 0:
+            raise ValueError("--sparse-k must be greater than 0")
+        if self.config.rrf_k <= 0:
+            raise ValueError("--rrf-k must be greater than 0")
+        if self.config.rerank_candidates <= 0:
+            raise ValueError("--rerank-candidates must be greater than 0")
+        if self.config.final_context_k <= 0:
+            raise ValueError("--final-context-k must be greater than 0")
 
     def ingest_document(self, document_path: Path, *, chunk_size: int, chunk_overlap: int, show_chunks: bool = True) -> int:
         source = str(document_path)
@@ -291,23 +445,138 @@ class RagPipeline:
         )
 
         self.vector_db.upsert_chunks(rag_chunks, vectors)
+        self.keyword_index_dirty = True
         print(
             f"[vector-db] upserted into {self.vector_db.persist_directory} "
             f"collection={self.vector_db.collection_name} total_entries={self.vector_db.count()}"
         )
         return len(rag_chunks)
 
-    def retrieve(self, question: str) -> list[dict[str, Any]]:
-        query_vector = self.embedder.embed_query(question)
-        results = self.vector_db.search(query_vector, top_k=self.config.top_k)
-        print(f"[retrieval] top_k={self.config.top_k} hits={len(results)}")
+    def retrieve(
+        self,
+        question: str,
+        *,
+        top_k: int | None = None,
+        include_debug: bool = False,
+    ) -> list[dict[str, Any]] | dict[str, Any]:
+        final_k = top_k or self.config.final_context_k or self.config.top_k
+        retrieval_mode = self.config.retrieval_mode
+
+        dense_hits: list[dict[str, Any]] = []
+        sparse_hits: list[dict[str, Any]] = []
+        query_vector: list[float] = []
+
+        if retrieval_mode in {"dense", "hybrid"}:
+            query_vector = self.embedder.embed_query(question)
+            dense_hits = self.vector_db.search(query_vector, top_k=max(self.config.dense_k, self.config.rerank_candidates))
+
+        if retrieval_mode in {"sparse", "hybrid"}:
+            self._ensure_keyword_index()
+            sparse_hits = self.keyword_index.search(question, top_k=max(self.config.sparse_k, self.config.rerank_candidates))
+
+        merged_by_chunk: dict[str, dict[str, Any]] = {}
+
+        for rank, item in enumerate(dense_hits, start=1):
+            chunk_id = str(item.get("chunk_id", ""))
+            if not chunk_id:
+                continue
+            entry = merged_by_chunk.setdefault(
+                chunk_id,
+                {
+                    "chunk_id": chunk_id,
+                    "source": str(item.get("source", "")),
+                    "text": str(item.get("text", "")),
+                },
+            )
+            entry["dense_rank"] = rank
+            entry["dense_score"] = float(item.get("score", 0.0))
+
+        for rank, item in enumerate(sparse_hits, start=1):
+            chunk_id = str(item.get("chunk_id", ""))
+            if not chunk_id:
+                continue
+            entry = merged_by_chunk.setdefault(
+                chunk_id,
+                {
+                    "chunk_id": chunk_id,
+                    "source": str(item.get("source", "")),
+                    "text": str(item.get("text", "")),
+                },
+            )
+            entry["bm25_rank"] = rank
+            entry["bm25_score"] = float(item.get("bm25_score", 0.0))
+
+        merged_candidates = list(merged_by_chunk.values())
+        for candidate in merged_candidates:
+            rrf_score = 0.0
+            dense_rank = candidate.get("dense_rank")
+            bm25_rank = candidate.get("bm25_rank")
+            if isinstance(dense_rank, int):
+                rrf_score += 1.0 / (self.config.rrf_k + dense_rank)
+            if isinstance(bm25_rank, int):
+                rrf_score += 1.0 / (self.config.rrf_k + bm25_rank)
+            candidate["rrf_score"] = rrf_score
+
+        if retrieval_mode == "dense":
+            merged_candidates.sort(key=lambda item: float(item.get("dense_score", 0.0)), reverse=True)
+        elif retrieval_mode == "sparse":
+            merged_candidates.sort(key=lambda item: float(item.get("bm25_score", 0.0)), reverse=True)
+        else:
+            merged_candidates.sort(key=lambda item: float(item.get("rrf_score", 0.0)), reverse=True)
+
+        rerank_pool = merged_candidates[: self.config.rerank_candidates]
+        bm25_norm = self._normalize_scores([float(item.get("bm25_score", 0.0)) for item in rerank_pool])
+        dense_norm = self._normalize_scores([float(item.get("dense_score", 0.0)) for item in rerank_pool])
+        rrf_norm = self._normalize_scores([float(item.get("rrf_score", 0.0)) for item in rerank_pool])
+
+        for index, candidate in enumerate(rerank_pool):
+            overlap = self._token_overlap_ratio(question, str(candidate.get("text", "")))
+            base = rrf_norm[index] if retrieval_mode == "hybrid" else dense_norm[index] if retrieval_mode == "dense" else bm25_norm[index]
+            candidate["rerank_score"] = (0.5 * base) + (0.25 * dense_norm[index]) + (0.15 * bm25_norm[index]) + (0.10 * overlap)
+
+        if self.config.rerank_enabled:
+            rerank_pool.sort(key=lambda item: float(item.get("rerank_score", 0.0)), reverse=True)
+
+        selected = rerank_pool[:final_k]
+        results: list[dict[str, Any]] = []
+        for candidate in selected:
+            results.append(
+                {
+                    "score": float(candidate.get("rerank_score", candidate.get("rrf_score", candidate.get("dense_score", candidate.get("bm25_score", 0.0))))),
+                    "chunk_id": str(candidate.get("chunk_id", "")),
+                    "source": str(candidate.get("source", "")),
+                    "text": str(candidate.get("text", "")),
+                    "dense_rank": candidate.get("dense_rank"),
+                    "bm25_rank": candidate.get("bm25_rank"),
+                    "rrf_score": float(candidate.get("rrf_score", 0.0)),
+                    "rerank_score": float(candidate.get("rerank_score", 0.0)),
+                }
+            )
+
+        print(
+            f"[retrieval] mode={retrieval_mode} dense_hits={len(dense_hits)} "
+            f"sparse_hits={len(sparse_hits)} rerank_pool={len(rerank_pool)} final={len(results)}"
+        )
         for result in results:
             preview = str(result.get("text", ""))[:120].replace("\n", " ").strip()
             print(
                 f"  - chunk={result.get('chunk_id','')} score={float(result.get('score', 0.0)):.4f} "
                 f"source={result.get('source','')} text={preview}{'...' if len(str(result.get('text',''))) > 120 else ''}"
             )
-        return results
+
+        if not include_debug:
+            return results
+
+        return {
+            "results": results,
+            "debug": {
+                "retrieval_mode": retrieval_mode,
+                "dense_hits": len(dense_hits),
+                "sparse_hits": len(sparse_hits),
+                "rerank_candidates": len(rerank_pool),
+                "final_context_k": len(results),
+            },
+        }
 
     def build_rag_prompt(self, question: str, contexts: list[dict[str, Any]]) -> str:
         if not contexts:
@@ -327,11 +596,12 @@ class RagPipeline:
             "If context is insufficient, clearly state what is missing.\n\n"
             f"Question:\n{question}\n\n"
             f"Retrieved context:\n{context_block}\n\n"
-            "Return a concise answer and cite chunk ids like [1], [2] when used."
+            "Return a concise answer and cite exact chunk ids like [doc-3], [doc-9] when used."
         )
 
     def answer_question(self, question: str) -> dict[str, Any]:
-        contexts = self.retrieve(question)
+        retrieval_output = self.retrieve(question, include_debug=True)
+        contexts = retrieval_output["results"]
         prompt = self.build_rag_prompt(question, contexts)
 
         if self.active_mode == "demo":
@@ -359,6 +629,7 @@ class RagPipeline:
             "question": question,
             "prompt": prompt,
             "contexts": contexts,
+            "retrieval_debug": retrieval_output.get("debug", {}),
             "answer": answer,
         }
 
@@ -465,8 +736,7 @@ class RagPipeline:
         )
 
     def generate_spec_doc(self, spec_query: str, max_spec_chunks: int, implementation_target: str) -> dict[str, Any]:
-        query_vector = self.embedder.embed_query(spec_query)
-        retrieved_contexts = self.vector_db.search(query_vector, top_k=max_spec_chunks)
+        retrieved_contexts = self.retrieve(spec_query, top_k=max_spec_chunks)
         response_stop_reason: str | None = None
         response_block_types: list[str] = []
         response_block_text_lengths: list[int] = []
@@ -534,10 +804,40 @@ class RagPipeline:
             try:
                 result = self.answer_question(question)
                 prediction = str(result["answer"])
+                retrieved_contexts = list(result.get("contexts", []))
+                retrieved_chunk_ids = [str(item.get("chunk_id", "")) for item in retrieved_contexts if str(item.get("chunk_id", ""))]
+                gold_chunk_ids = [str(item).strip() for item in row.get("gold_chunk_ids", []) if str(item).strip()]
+                required_citations = [str(item).strip() for item in row.get("required_citations", []) if str(item).strip()]
+                cited_chunk_ids = self._extract_citation_ids(prediction)
+                valid_citations = [chunk_id for chunk_id in cited_chunk_ids if chunk_id in set(retrieved_chunk_ids)]
+
+                context_precision: float | None = None
+                context_recall: float | None = None
+                if gold_chunk_ids:
+                    overlap = len(set(retrieved_chunk_ids) & set(gold_chunk_ids))
+                    context_precision = overlap / len(retrieved_chunk_ids) if retrieved_chunk_ids else 0.0
+                    context_recall = overlap / len(gold_chunk_ids)
+
+                context_text = "\n".join(str(item.get("text", "")) for item in retrieved_contexts)
+                faithfulness = self._token_overlap_ratio(prediction, context_text)
+                answer_relevance = token_f1(question, prediction)
+
+                if cited_chunk_ids:
+                    citation_correctness = len(valid_citations) / len(cited_chunk_ids)
+                elif required_citations:
+                    citation_correctness = 0.0
+                else:
+                    citation_correctness = 1.0
+
                 metrics = {
                     "exact_match": exact_match(reference, prediction),
                     "token_f1": token_f1(reference, prediction),
                     "criteria_score": criteria_score(eval_criteria, prediction),
+                    "context_precision": context_precision,
+                    "context_recall": context_recall,
+                    "faithfulness": faithfulness,
+                    "answer_relevance": answer_relevance,
+                    "citation_correctness": citation_correctness,
                 }
                 criteria_value: float | None = metrics["criteria_score"] if eval_criteria else None
                 metrics["overall_score"] = overall_score(
@@ -548,6 +848,15 @@ class RagPipeline:
                 metrics["grade"] = score_grade(metrics["overall_score"])
                 metrics["retrieved_chunks"] = len(result["contexts"])
                 metrics["grading_details"] = {"method": self.active_grader_method}
+                metrics["retrieval_metrics"] = {
+                    "context_precision": context_precision,
+                    "context_recall": context_recall,
+                }
+                metrics["generation_metrics"] = {
+                    "faithfulness": faithfulness,
+                    "answer_relevance": answer_relevance,
+                    "citation_correctness": citation_correctness,
+                }
 
                 if self.active_grader_method == "model":
                     if self.client is None or not self.active_grader_model:
@@ -600,6 +909,12 @@ class RagPipeline:
                         "eval_criteria": eval_criteria,
                         "code_grader": code_grader_spec,
                         "retrieved_contexts": result["contexts"],
+                        "retrieval_debug": result.get("retrieval_debug", {}),
+                        "retrieved_chunk_ids": retrieved_chunk_ids,
+                        "gold_chunk_ids": gold_chunk_ids,
+                        "required_citations": required_citations,
+                        "cited_chunk_ids": cited_chunk_ids,
+                        "valid_cited_chunk_ids": valid_citations,
                         "metrics": metrics,
                     }
                 )
@@ -617,6 +932,27 @@ class RagPipeline:
         avg_retrieved = (
             sum(float(item["metrics"].get("retrieved_chunks", 0.0)) for item in prediction_rows) / count if count else 0.0
         )
+        avg_faithfulness = (
+            sum(float(item["metrics"].get("faithfulness", 0.0)) for item in prediction_rows) / count if count else 0.0
+        )
+        avg_answer_relevance = (
+            sum(float(item["metrics"].get("answer_relevance", 0.0)) for item in prediction_rows) / count if count else 0.0
+        )
+        avg_citation_correctness = (
+            sum(float(item["metrics"].get("citation_correctness", 0.0)) for item in prediction_rows) / count if count else 0.0
+        )
+        precision_values = [
+            float(item["metrics"]["context_precision"])
+            for item in prediction_rows
+            if item["metrics"].get("context_precision") is not None
+        ]
+        recall_values = [
+            float(item["metrics"]["context_recall"])
+            for item in prediction_rows
+            if item["metrics"].get("context_recall") is not None
+        ]
+        avg_context_precision = (sum(precision_values) / len(precision_values)) if precision_values else None
+        avg_context_recall = (sum(recall_values) / len(recall_values)) if recall_values else None
 
         resolved_run_name = run_name or f"rag-{utc_timestamp()}"
         run_dir = output_dir / resolved_run_name
@@ -637,10 +973,22 @@ class RagPipeline:
                 "avg_token_f1": avg_f1,
                 "exact_match_rate": avg_em,
                 "avg_retrieved_chunks": avg_retrieved,
+                "avg_context_precision": avg_context_precision,
+                "avg_context_recall": avg_context_recall,
+                "avg_faithfulness": avg_faithfulness,
+                "avg_answer_relevance": avg_answer_relevance,
+                "avg_citation_correctness": avg_citation_correctness,
             },
             "vector_db_path": str(self.vector_db.persist_directory),
             "vector_db_collection": self.vector_db.collection_name,
             "embedding_model": self.config.embedding_model,
+            "retrieval_mode": self.config.retrieval_mode,
+            "dense_k": self.config.dense_k,
+            "sparse_k": self.config.sparse_k,
+            "rrf_k": self.config.rrf_k,
+            "rerank_enabled": self.config.rerank_enabled,
+            "rerank_candidates": self.config.rerank_candidates,
+            "final_context_k": self.config.final_context_k,
             "generated_at": datetime.now(timezone.utc).isoformat(),
         }
 
@@ -664,6 +1012,23 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--chunk-size", type=int, default=220, help="Chunk size in words")
     parser.add_argument("--chunk-overlap", type=int, default=40, help="Chunk overlap in words")
     parser.add_argument("--top-k", type=int, default=4, help="Top K chunks to retrieve")
+    parser.add_argument(
+        "--retrieval-mode",
+        choices=["dense", "sparse", "hybrid"],
+        default="hybrid",
+        help="Retrieval strategy: dense vectors, sparse BM25, or hybrid fusion",
+    )
+    parser.add_argument("--dense-k", type=int, default=20, help="Candidate count for dense retrieval")
+    parser.add_argument("--sparse-k", type=int, default=20, help="Candidate count for BM25 retrieval")
+    parser.add_argument("--rrf-k", type=int, default=60, help="RRF smoothing constant for hybrid fusion")
+    parser.add_argument(
+        "--rerank-enabled",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enable reranking of retrieved candidates before final context selection",
+    )
+    parser.add_argument("--rerank-candidates", type=int, default=20, help="Number of fused candidates to rerank")
+    parser.add_argument("--final-context-k", type=int, default=6, help="Final number of chunks sent to generation")
     parser.add_argument(
         "--embedding-model",
         default="sentence-transformers/all-MiniLM-L6-v2",
@@ -761,6 +1126,13 @@ def main() -> None:
         grader_fallback_model=args.grader_fallback_model,
         grader_max_tokens=args.grader_max_tokens,
         code_timeout_seconds=args.code_timeout_seconds,
+        retrieval_mode=args.retrieval_mode,
+        dense_k=args.dense_k,
+        sparse_k=args.sparse_k,
+        rrf_k=args.rrf_k,
+        rerank_enabled=args.rerank_enabled,
+        rerank_candidates=args.rerank_candidates,
+        final_context_k=args.final_context_k,
     )
 
     pipeline = RagPipeline(

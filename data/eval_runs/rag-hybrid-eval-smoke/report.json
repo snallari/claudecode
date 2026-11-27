@@ -1,0 +1,32 @@
+{
+  "run_name": "rag-hybrid-eval-smoke",
+  "dataset": "/Users/sairam/Documents/sai-ai/anthropic/data/datasets/rag_eval_sample.jsonl",
+  "mode": "demo",
+  "model": "demo-local",
+  "grader": "lexical",
+  "grader_model": null,
+  "rows_evaluated": 2,
+  "errors": 0,
+  "metrics": {
+    "avg_overall_score": 7.467994310099574,
+    "avg_token_f1": 0.10668563300142248,
+    "exact_match_rate": 0.0,
+    "avg_retrieved_chunks": 1.0,
+    "avg_context_precision": null,
+    "avg_context_recall": null,
+    "avg_faithfulness": 0.6363636363636364,
+    "avg_answer_relevance": 0.03225806451612903,
+    "avg_citation_correctness": 1.0
+  },
+  "vector_db_path": "/Users/sairam/Documents/sai-ai/anthropic/data/vector_db/chroma",
+  "vector_db_collection": "rag_chunks_eval_v2",
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "retrieval_mode": "hybrid",
+  "dense_k": 20,
+  "sparse_k": 20,
+  "rrf_k": 60,
+  "rerank_enabled": true,
+  "rerank_candidates": 20,
+  "final_context_k": 6,
+  "generated_at": "2026-11-27T05:37:48.800136+00:00"
+}

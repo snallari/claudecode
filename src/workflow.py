@@ -90,6 +90,23 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rag-vector-db-path", default="data/vector_db/chroma", help="Workflow RAG Chroma directory")
     parser.add_argument("--rag-collection-name", default="rag_chunks", help="Workflow RAG Chroma collection name")
     parser.add_argument(
+        "--rag-retrieval-mode",
+        choices=["dense", "sparse", "hybrid"],
+        default="hybrid",
+        help="Workflow RAG retrieval strategy",
+    )
+    parser.add_argument("--rag-dense-k", type=int, default=20, help="Workflow RAG dense candidate count")
+    parser.add_argument("--rag-sparse-k", type=int, default=20, help="Workflow RAG BM25 candidate count")
+    parser.add_argument("--rag-rrf-k", type=int, default=60, help="Workflow RAG RRF constant")
+    parser.add_argument(
+        "--rag-rerank-enabled",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enable reranking in workflow RAG",
+    )
+    parser.add_argument("--rag-rerank-candidates", type=int, default=20, help="Workflow RAG rerank pool size")
+    parser.add_argument("--rag-final-context-k", type=int, default=6, help="Workflow RAG final context chunk count")
+    parser.add_argument(
         "--generate-spec-doc",
         action="store_true",
         help="Generate a spec markdown from workflow RAG retrieval context.",
@@ -139,6 +156,13 @@ def run_rag_steps(args: argparse.Namespace) -> None:
         grader_fallback_model=args.grader_fallback_model,
         grader_max_tokens=args.grader_max_tokens,
         code_timeout_seconds=args.code_timeout_seconds,
+        retrieval_mode=args.rag_retrieval_mode,
+        dense_k=args.rag_dense_k,
+        sparse_k=args.rag_sparse_k,
+        rrf_k=args.rag_rrf_k,
+        rerank_enabled=args.rag_rerank_enabled,
+        rerank_candidates=args.rag_rerank_candidates,
+        final_context_k=args.rag_final_context_k,
     )
     rag_pipeline = RagPipeline(
         vector_db=vector_db,
